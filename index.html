@@ -239,6 +239,26 @@
                   <option value="bands">Resistance bands</option>
                 </select>
               </label>
+              <label>
+                <span>Pre-workout</span>
+                <select id="prepActivity">
+                  <option>None</option>
+                  <option>Running</option>
+                  <option>Swimming</option>
+                  <option>Sauna</option>
+                  <option>Warm-up</option>
+                  <option>Mobility</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label>
+                <span>Prep minutes</span>
+                <input id="prepMinutesDefault" type="number" min="0" max="240" step="1" inputmode="numeric" placeholder="8" />
+              </label>
+              <label>
+                <span>Prep distance</span>
+                <input id="prepDistanceDefault" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="Optional" />
+              </label>
               <label class="wide">
                 <span>User request</span>
                 <textarea id="userWant" rows="3" placeholder="Example: Low-impact workouts, more core, stronger legs."></textarea>

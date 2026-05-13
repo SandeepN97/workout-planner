@@ -13,6 +13,9 @@ const defaultState = {
     experience: "beginner",
     availableTime: "35",
     equipment: "bodyweight",
+    prepActivity: "Running",
+    prepMinutes: "8",
+    prepDistance: "",
     userWant: "",
   },
 };
@@ -176,7 +179,7 @@ const progressionSteps = [
   "Deload every 5-7 hard weeks by reducing load 10-15% or cutting one set from each movement.",
 ];
 
-const prepActivities = ["Running", "Swimming", "Sauna", "Warm-up", "Mobility", "Other"];
+const prepActivities = ["None", "Running", "Swimming", "Sauna", "Warm-up", "Mobility", "Other"];
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -345,6 +348,9 @@ function handlePreferencesSubmit(event) {
     experience: $("#experience").value,
     availableTime: $("#availableTime").value,
     equipment: $("#equipment").value,
+    prepActivity: $("#prepActivity").value,
+    prepMinutes: $("#prepMinutesDefault").value,
+    prepDistance: $("#prepDistanceDefault").value,
     userWant: $("#userWant").value.trim(),
   };
   saveState();
@@ -377,7 +383,7 @@ function renderWeeklyPlan() {
   exerciseDemoDetails.clear();
   renderRoutineOverview();
   renderHeroMedia(activeDay);
-  $("#startWorkout").textContent = state.activeWorkout ? "Resume workout" : `Start ${activeDay.day}`;
+  $("#startWorkout").textContent = state.activeWorkout ? "Resume workout" : "Start workout";
 
   const progressionList = $("#progressionList");
   progressionList.innerHTML = "";
@@ -500,13 +506,14 @@ function startWorkout() {
     return;
   }
   const activeDay = weeklyProgram[activeProgramDay];
+  const defaultPrep = getDefaultPrepActivity();
   state.activeWorkout = {
     id: `workout-${Date.now()}`,
     date: todayISO(),
     dayIndex: activeProgramDay,
     stepIndex: -1,
     startedAt: new Date().toISOString(),
-    prep: [],
+    prep: defaultPrep ? [defaultPrep] : [],
     exercises: activeDay.exercises.map(([name, sets, note, slug]) => ({
       name,
       sets,
@@ -519,6 +526,14 @@ function startWorkout() {
   saveState();
   renderWorkoutRunner();
   $("#workoutRunner").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function getDefaultPrepActivity() {
+  const activity = state.preferences.prepActivity || "None";
+  const minutes = Number(state.preferences.prepMinutes || 0);
+  const distance = Number(state.preferences.prepDistance || 0);
+  if (activity === "None" || minutes <= 0) return null;
+  return { type: activity, minutes, distance };
 }
 
 function cancelWorkout() {
@@ -587,7 +602,7 @@ function renderPrepStep(workout) {
       <form class="prep-form" id="prepForm">
         <label>
           <span>Activity</span>
-          <select id="prepType">${prepActivities.map((activity) => `<option>${escapeHtml(activity)}</option>`).join("")}</select>
+          <select id="prepType">${prepActivities.filter((activity) => activity !== "None").map((activity) => `<option>${escapeHtml(activity)}</option>`).join("")}</select>
         </label>
         <label>
           <span>Minutes</span>
