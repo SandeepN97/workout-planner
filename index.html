@@ -64,6 +64,7 @@
             <h2 id="heroPlanTitle">Personalized movement, measured daily.</h2>
             <p id="heroPlanText">Choose your goal, log the day, and PulsePlan will keep the next session realistic.</p>
           </div>
+          <div class="hero-media" id="heroMedia" aria-label="Featured exercises"></div>
           <div class="readiness-card">
             <span>Readiness</span>
             <strong id="readinessScore">--</strong>
@@ -100,22 +101,17 @@
               <p class="section-kicker">Weekly split</p>
               <h2>Push, pull, legs, upper, shoulders and arms</h2>
             </div>
-            <div class="progression-chip">
-              <span>Progression</span>
-              <strong>12 / 10 / 8</strong>
+            <div class="plan-actions">
+              <button class="auto-fill-button curator-only" id="autoFillTutorials" type="button">Auto-fill videos</button>
+              <div class="progression-chip">
+                <span>Progression</span>
+                <strong>12 / 10 / 8</strong>
+              </div>
             </div>
           </div>
+          <p class="curator-status curator-only" id="curatorStatus"></p>
 
-          <div class="day-tabs" id="dayTabs" role="tablist" aria-label="Workout days"></div>
-          <div class="active-day-summary" id="activeDaySummary"></div>
-          <div class="api-strip">
-            <div>
-              <strong>Free media source</strong>
-              <span id="apiStatus">Local PNG fallback ready. ExerciseDB GIFs load when a match is available.</span>
-            </div>
-            <a href="https://oss.exercisedb.dev/docs" target="_blank" rel="noreferrer">ExerciseDB API</a>
-          </div>
-          <div class="exercise-grid" id="exerciseGrid"></div>
+          <div class="routine-overview" id="routineOverview" aria-label="Current workout routine"></div>
 
           <div class="progression-panel">
             <div>
@@ -254,6 +250,39 @@
         </section>
       </section>
     </main>
+
+    <div class="demo-modal" id="demoModal" aria-hidden="true">
+      <div class="demo-modal-backdrop" data-close-demo></div>
+      <section class="demo-modal-panel" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle">
+        <button class="demo-modal-close" type="button" data-close-demo aria-label="Close form demo">Close</button>
+        <div class="demo-modal-media">
+          <img id="demoModalImage" alt="" />
+          <span class="demo-modal-badge">In-page tutorial</span>
+        </div>
+        <div class="demo-modal-body">
+          <p class="section-kicker" id="demoModalMuscle"></p>
+          <h2 id="demoModalTitle"></h2>
+          <div class="exercise-meta" id="demoModalMeta"></div>
+          <section class="shorts-panel" aria-label="YouTube Shorts tutorial">
+            <div class="shorts-header">
+              <div>
+                <p class="section-kicker">Verified video</p>
+                <h3 id="shortsPanelTitle">Tutorial</h3>
+              </div>
+              <button class="shorts-clear curator-only" id="clearShort" type="button">Clear</button>
+            </div>
+            <div class="shorts-player" id="shortsPlayer">
+              <p>No verified video has been added for this exercise yet.</p>
+            </div>
+            <form class="shorts-form curator-only" id="shortsForm">
+              <input id="shortsUrl" type="url" placeholder="Paste YouTube Shorts URL" />
+              <button type="submit">Verify and save</button>
+            </form>
+          </section>
+          <div class="exercise-guidance" id="demoModalGuidance"></div>
+        </div>
+      </section>
+    </div>
 
     <script src="app.js"></script>
   </body>

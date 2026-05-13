@@ -1,7 +1,10 @@
 const storageKey = "pulseplan-state-v1";
+const API_BASE = window.location.protocol === "file:" ? "http://127.0.0.1:4174" : "";
+const CURATOR_MODE = new URLSearchParams(window.location.search).has("curate");
 
 const defaultState = {
   logs: [],
+  shorts: {},
   preferences: {
     goal: "balanced",
     experience: "beginner",
@@ -65,6 +68,22 @@ const experienceAdjustments = {
   beginner: "Keep the effort at 6-7 out of 10 and prioritize consistency.",
   intermediate: "Work around 7-8 out of 10 and track one measurable progression.",
   advanced: "Push one main block hard, then keep accessories crisp and controlled.",
+};
+
+// Add verified YouTube Shorts or video IDs here to auto-embed them per exercise.
+// YouTube does not support no-key search embeds from a static page, so this keeps
+// auto-included videos accurate instead of guessing from search results.
+const youtubeTutorials = {
+  // "barbell-bench-press": "YOUTUBE_VIDEO_ID",
+};
+let serverTutorials = {};
+
+const dayAccents = {
+  push: "Chest drive",
+  pull: "Back density",
+  legs: "Lower power",
+  upper: "Upper balance",
+  arms: "Arm detail",
 };
 
 const weeklyProgram = [
@@ -160,9 +179,16 @@ let state = loadState();
 let activeProgramDay = 0;
 const exerciseMediaCache = new Map();
 let mediaRequestToken = 0;
+const exerciseDemoDetails = new Map();
+let activeDemoKey = "";
 
 function loadState() {
-  const saved = localStorage.getItem(storageKey);
+  let saved = null;
+  try {
+    saved = localStorage.getItem(storageKey);
+  } catch {
+    saved = null;
+  }
   if (!saved) return structuredClone(defaultState);
   try {
     const parsed = JSON.parse(saved);
@@ -180,7 +206,11 @@ function loadState() {
 }
 
 function saveState() {
-  localStorage.setItem(storageKey, JSON.stringify(state));
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(state));
+  } catch {
+    // File previews can block storage; keep the in-memory session working.
+  }
 }
 
 function todayISO() {
@@ -191,7 +221,7 @@ function formatDate(dateString) {
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric" }).format(new Date(`${dateString}T12:00:00`));
 }
 
-function init() {
+async function init() {
   $("#todayLabel").textContent = new Intl.DateTimeFormat("en", {
     weekday: "long",
     month: "long",
@@ -208,8 +238,82 @@ function init() {
   $("#preferencesForm").addEventListener("submit", handlePreferencesSubmit);
   $("#refreshPlan").addEventListener("click", renderSuggestion);
   $("#resetDemo").addEventListener("click", resetData);
+  $("#shortsForm").addEventListener("submit", handleShortsSubmit);
+  $("#clearShort").addEventListener("click", clearCurrentShort);
+  $("#autoFillTutorials").addEventListener("click", autoFillTutorials);
+  document.body.classList.toggle("curator-mode", CURATOR_MODE);
+  document.querySelectorAll("[data-close-demo]").forEach((element) => {
+    element.addEventListener("click", closeExerciseDemo);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeExerciseDemo();
+  });
 
+  await loadServerTutorials();
   render();
+}
+
+async function loadServerTutorials() {
+  try {
+    const response = await fetch(`${API_BASE}/api/tutorials`);
+    if (!response.ok) throw new Error("Tutorial API unavailable");
+    serverTutorials = await response.json();
+  } catch {
+    try {
+      const fallback = await fetch("data/exercise-tutorials.json");
+      serverTutorials = fallback.ok ? await fallback.json() : {};
+    } catch {
+      serverTutorials = {};
+    }
+  }
+}
+
+async function saveServerTutorial(slug, videoId) {
+  try {
+    const response = await fetch(`${API_BASE}/api/tutorials/${slug}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ videoId }),
+    });
+    if (!response.ok) return false;
+    const payload = await response.json();
+    if (payload.videoId) {
+      serverTutorials[slug] = payload;
+    } else {
+      delete serverTutorials[slug];
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function autoFillTutorials() {
+  const status = $("#curatorStatus");
+  status.textContent = "Searching YouTube and saving missing exercise videos...";
+  try {
+    const exercises = weeklyProgram.flatMap((programDay) => programDay.exercises.map(([name, , , slug, mediaQuery]) => ({
+      slug,
+      name,
+      query: mediaQuery,
+      day: programDay.title,
+    })));
+    const response = await fetch(`${API_BASE}/api/tutorials/auto-fill`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ exercises }),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      status.textContent = payload.error || "Could not auto-fill videos.";
+      return;
+    }
+    serverTutorials = payload.tutorials || {};
+    renderWeeklyPlan();
+    status.textContent = `Auto-filled ${payload.added?.length || 0} videos. ${payload.skipped?.length || 0} exercises skipped.`;
+  } catch {
+    status.textContent = "Could not reach the backend auto-fill endpoint.";
+  }
 }
 
 function handleLogSubmit(event) {
@@ -264,87 +368,10 @@ function render() {
 }
 
 function renderWeeklyPlan() {
-  const tabs = $("#dayTabs");
-  const grid = $("#exerciseGrid");
-  const summary = $("#activeDaySummary");
   const activeDay = weeklyProgram[activeProgramDay];
-  tabs.innerHTML = "";
-  grid.innerHTML = "";
-  summary.innerHTML = "";
-
-  weeklyProgram.forEach((programDay, index) => {
-    const button = document.createElement("button");
-    button.className = `day-tab${index === activeProgramDay ? " active" : ""}`;
-    button.type = "button";
-    button.setAttribute("role", "tab");
-    button.setAttribute("aria-selected", String(index === activeProgramDay));
-    button.innerHTML = `<span>${programDay.day} - ${programDay.title}</span><small>${programDay.focus}</small>`;
-    button.addEventListener("click", () => {
-      activeProgramDay = index;
-      renderWeeklyPlan();
-    });
-    tabs.appendChild(button);
-  });
-
-  const summaryCopy = document.createElement("div");
-  const summaryTitle = document.createElement("h3");
-  summaryTitle.textContent = `${activeDay.day}: ${activeDay.title}`;
-  const summaryText = document.createElement("p");
-  summaryText.textContent = activeDay.summary;
-  summaryCopy.append(summaryTitle, summaryText);
-  const volume = document.createElement("p");
-  volume.textContent = `${activeDay.exercises.length} exercises - ${activeDay.focus}`;
-  summary.append(summaryCopy, volume);
-
-  activeDay.exercises.forEach(([name, sets, note, slug, mediaQuery]) => {
-    const card = document.createElement("article");
-    card.className = "exercise-card";
-    card.dataset.slug = slug;
-    const image = document.createElement("img");
-    image.src = `assets/exercises/${slug}.png`;
-    image.alt = `${name} exercise illustration`;
-    image.loading = "lazy";
-    image.dataset.localSrc = image.src;
-    const media = document.createElement("div");
-    media.className = "exercise-media";
-    const badge = document.createElement("span");
-    badge.className = "media-badge";
-    badge.textContent = "Local PNG";
-    media.append(image, badge);
-    const body = document.createElement("div");
-    body.className = "exercise-card-body";
-    const title = document.createElement("h3");
-    title.textContent = name;
-    const meta = document.createElement("div");
-    meta.className = "exercise-meta";
-    const setsPill = document.createElement("span");
-    setsPill.textContent = sets;
-    const progressionPill = document.createElement("span");
-    progressionPill.textContent = sets.includes("30 sec") ? "Hold" : "Double progression";
-    const apiPill = document.createElement("span");
-    apiPill.dataset.role = "api-pill";
-    apiPill.textContent = "Checking API";
-    meta.append(setsPill, progressionPill, apiPill);
-    const noteText = document.createElement("p");
-    noteText.className = "exercise-note";
-    noteText.textContent = note;
-    const actions = document.createElement("div");
-    actions.className = "exercise-actions";
-    const videoLink = document.createElement("a");
-    videoLink.href = youtubeSearchUrl(`${mediaQuery} proper form tutorial`);
-    videoLink.target = "_blank";
-    videoLink.rel = "noreferrer";
-    videoLink.textContent = "Training video";
-    const apiLink = document.createElement("a");
-    apiLink.href = exerciseDbSearchUrl(mediaQuery);
-    apiLink.target = "_blank";
-    apiLink.rel = "noreferrer";
-    apiLink.textContent = "API source";
-    actions.append(videoLink, apiLink);
-    body.append(title, meta, noteText, actions);
-    card.append(media, body);
-    grid.appendChild(card);
-  });
+  exerciseDemoDetails.clear();
+  renderRoutineOverview();
+  renderHeroMedia(activeDay);
 
   const progressionList = $("#progressionList");
   progressionList.innerHTML = "";
@@ -354,45 +381,208 @@ function renderWeeklyPlan() {
     progressionList.appendChild(item);
   });
 
-  hydrateExerciseMedia(activeDay);
+  hydrateRoutineMedia();
 }
 
-async function hydrateExerciseMedia(activeDay) {
+function renderRoutineOverview() {
+  const overview = $("#routineOverview");
+  overview.innerHTML = "";
+
+  weeklyProgram.forEach((programDay, index) => {
+    const card = document.createElement("article");
+    card.className = `routine-day routine-day-${programDay.id}`;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "routine-day-header";
+    button.setAttribute("aria-label", `View ${programDay.day} ${programDay.title}`);
+    button.addEventListener("click", () => {
+      activeProgramDay = index;
+      renderWeeklyPlan();
+    });
+
+    const title = document.createElement("div");
+    const day = document.createElement("span");
+    day.textContent = programDay.day;
+    const heading = document.createElement("h3");
+    heading.textContent = programDay.title;
+    title.append(day, heading);
+    const focus = document.createElement("p");
+    focus.textContent = programDay.focus;
+    button.append(title, focus);
+
+    const list = document.createElement("ol");
+    programDay.exercises.forEach(([name, sets, note, slug, mediaQuery], exerciseIndex) => {
+      const demoKey = `${programDay.id}--${slug}`;
+      const primaryMuscle = getPrimaryMuscle(name, programDay);
+      const item = document.createElement("li");
+      item.dataset.demoKey = demoKey;
+      const thumb = document.createElement("button");
+      thumb.type = "button";
+      thumb.className = "routine-thumb";
+      thumb.setAttribute("aria-label", `Open ${name} tutorial`);
+      thumb.addEventListener("click", () => openRoutineExerciseDemo(index, demoKey));
+      const image = document.createElement("img");
+      image.src = `assets/exercises/${slug}.png`;
+      image.alt = `${name} illustration`;
+      thumb.appendChild(image);
+
+      const text = document.createElement("div");
+      text.className = "routine-exercise-copy";
+      const exercise = document.createElement("strong");
+      exercise.textContent = name;
+      const detail = document.createElement("small");
+      detail.textContent = note;
+      const tags = document.createElement("div");
+      tags.className = "routine-tags";
+      tags.innerHTML = `<span>${`0${exerciseIndex + 1}`.slice(-2)}</span><span>${primaryMuscle}</span><span>${getExerciseEmphasis(name, programDay)}</span>`;
+      text.append(tags, exercise, detail);
+
+      const prescription = document.createElement("span");
+      prescription.textContent = sets;
+      const detailButton = document.createElement("button");
+      detailButton.type = "button";
+      detailButton.className = "routine-detail-button";
+      const hasAutoShort = Boolean(getCuratedTutorialId(slug));
+      detailButton.textContent = hasAutoShort ? "Watch video tutorial" : "Open tutorial";
+      detailButton.addEventListener("click", () => openRoutineExerciseDemo(index, demoKey));
+      item.append(thumb, text, prescription, detailButton);
+      list.appendChild(item);
+      exerciseDemoDetails.set(demoKey, {
+        name,
+        sets,
+        primaryMuscle,
+        progression: sets.includes("30 sec") ? "Hold" : "Double progression",
+        how: getExerciseHowTo(name),
+        benefits: getExerciseBenefits(name, programDay),
+        steps: [],
+        tutorialType: "Form guide",
+        slug,
+        youtubeId: getCuratedTutorialId(slug),
+        mediaQuery,
+        mediaSrc: image.src,
+      });
+    });
+
+    card.append(button, list);
+    overview.appendChild(card);
+  });
+}
+
+function openRoutineExerciseDemo(dayIndex, demoKey) {
+  activeProgramDay = dayIndex;
+  openExerciseDemo(demoKey);
+}
+
+function renderHeroMedia(activeDay) {
+  const heroMedia = $("#heroMedia");
+  heroMedia.innerHTML = "";
+  activeDay.exercises.slice(0, 3).forEach(([name, , , slug], index) => {
+    const frame = document.createElement("article");
+    frame.className = `hero-exercise hero-exercise-${index + 1}`;
+    const image = document.createElement("img");
+    image.src = `assets/exercises/${slug}.png`;
+    image.alt = `${name} preview`;
+    const label = document.createElement("span");
+    label.textContent = index === 0 ? dayAccents[activeDay.id] : name;
+    frame.append(image, label);
+    heroMedia.appendChild(frame);
+  });
+}
+
+function getPrimaryMuscle(name, activeDay) {
+  const lower = name.toLowerCase();
+  if (lower.includes("leg press")) return "Legs";
+  if (lower.includes("bench") || lower.includes("chest") || lower.includes("dip")) return "Chest";
+  if (lower.includes("shoulder") || lower.includes("lateral") || lower.includes("arnold") || lower.includes("delt")) return "Shoulders";
+  if (lower.includes("pushdown") || lower.includes("extension")) return "Triceps";
+  if (lower.includes("curl")) return "Biceps";
+  if (lower.includes("row") || lower.includes("pull") || lower.includes("deadlift")) return "Back";
+  if (lower.includes("press")) return activeDay.id === "legs" ? "Legs" : "Chest";
+  if (lower.includes("squat") || lower.includes("leg") || lower.includes("calf")) return "Legs";
+  if (lower.includes("crunch") || lower.includes("raise")) return "Core";
+  return activeDay.focus.split("+")[0].trim();
+}
+
+function getExerciseEmphasis(name, activeDay) {
+  const lower = name.toLowerCase();
+  if (lower.includes("optional")) return "Optional";
+  if (lower.includes("isometric") || lower.includes("hold")) return "Finisher";
+  if (activeDay.exercises[0][0] === name) return "Priority lift";
+  if (lower.includes("lateral") || lower.includes("curl") || lower.includes("pushdown") || lower.includes("raise")) return "Accessory";
+  return "Main work";
+}
+
+function getExerciseHowTo(name) {
+  const lower = name.toLowerCase();
+  if (lower.includes("bench") || lower.includes("press")) return "Set your brace, control the lowering phase, then press smoothly without bouncing or losing shoulder position.";
+  if (lower.includes("dip")) return "Lower under control with shoulders packed, lean slightly forward, then drive up while keeping elbows tracking cleanly.";
+  if (lower.includes("deadlift")) return "Hinge from the hips, keep the bar or dumbbells close, and stop the descent when your hamstrings are fully loaded.";
+  if (lower.includes("row")) return "Keep your torso steady, pull elbows toward your hips, pause briefly, and lower with control.";
+  if (lower.includes("pull-up") || lower.includes("pulldown")) return "Start from a long reach, pull elbows down toward your ribs, and avoid swinging through the rep.";
+  if (lower.includes("squat") || lower.includes("leg press")) return "Brace before each rep, use a consistent depth, and drive through the full foot without rushing the bottom.";
+  if (lower.includes("curl")) return "Keep your upper arms quiet, curl through a full range, and lower slowly to keep tension on the biceps.";
+  if (lower.includes("pushdown") || lower.includes("extension")) return "Pin your elbows in place, move only through the forearm, and squeeze hard at the finish.";
+  if (lower.includes("lateral") || lower.includes("rear delt") || lower.includes("face pull")) return "Lead with the elbows, use light control, and pause where the target muscle is working hardest.";
+  if (lower.includes("calf")) return "Pause at the top, lower into a full stretch, and keep each rep strict instead of bouncing.";
+  if (lower.includes("crunch") || lower.includes("leg raise")) return "Curl the pelvis toward the ribs, keep momentum low, and exhale through the hard part.";
+  return "Move through a controlled range, keep the target muscle loaded, and stop the set before form breaks.";
+}
+
+function getExerciseBenefits(name, activeDay) {
+  const lower = name.toLowerCase();
+  if (lower.includes("bench") || lower.includes("chest") || lower.includes("dip")) return "Builds chest pressing strength, triceps output, and upper-body power for the push day.";
+  if (lower.includes("shoulder") || lower.includes("arnold")) return "Improves overhead strength, shoulder stability, and balanced pressing mechanics.";
+  if (lower.includes("lateral") || lower.includes("rear delt") || lower.includes("face pull")) return "Adds shoulder shape, rear-delt balance, and healthier posture around pressing volume.";
+  if (lower.includes("row") || lower.includes("pull-up") || lower.includes("pulldown")) return "Builds back thickness, pulling strength, and shoulder control.";
+  if (lower.includes("deadlift")) return "Strengthens hamstrings, glutes, spinal erectors, and the hinge pattern.";
+  if (lower.includes("squat") || lower.includes("leg press")) return "Develops leg strength, quad size, and full-body bracing.";
+  if (lower.includes("leg curl")) return "Targets hamstrings directly and supports knee health for lower-body training.";
+  if (lower.includes("calf")) return "Builds lower-leg strength and ankle control through a full range.";
+  if (lower.includes("curl")) return "Builds biceps size and elbow-flexion strength with cleaner arm mechanics.";
+  if (lower.includes("pushdown") || lower.includes("extension")) return "Targets triceps for stronger lockout, arm size, and pressing support.";
+  if (lower.includes("crunch") || lower.includes("leg raise")) return "Trains trunk control, hip flexor strength, and visible core tension.";
+  return `Supports ${activeDay.focus.toLowerCase()} while reinforcing clean technique and repeatable progression.`;
+}
+
+async function hydrateRoutineMedia() {
   const token = (mediaRequestToken += 1);
-  $("#apiStatus").textContent = "Loading free ExerciseDB GIFs for this day...";
-  const results = await Promise.allSettled(
-    activeDay.exercises.map(([name, , , slug, mediaQuery]) => loadExerciseMedia(name, slug, mediaQuery)),
-  );
+  const requests = [];
+  weeklyProgram.forEach((programDay) => {
+    programDay.exercises.forEach(([name, , , slug, mediaQuery]) => {
+      requests.push(loadExerciseMedia(name, slug, mediaQuery, `${programDay.id}--${slug}`));
+    });
+  });
+  const results = await Promise.allSettled(requests);
   if (token !== mediaRequestToken) return;
 
   let matches = 0;
   results.forEach((result) => {
     if (result.status !== "fulfilled" || !result.value) return;
-    const { slug, media } = result.value;
-    const card = document.querySelector(`.exercise-card[data-slug="${slug}"]`);
-    if (!card) return;
-    const image = card.querySelector("img");
-    const badge = card.querySelector(".media-badge");
-    const apiPill = card.querySelector('[data-role="api-pill"]');
+    const { demoKey, media } = result.value;
+    const item = document.querySelector(`[data-demo-key="${demoKey}"]`);
+    const image = item?.querySelector(".routine-thumb img");
+    if (!item || !image) return;
     if (media?.gifUrl) {
       image.src = media.gifUrl;
-      badge.textContent = "ExerciseDB GIF";
-      apiPill.textContent = media.name;
+      item.classList.add("has-demo-media");
+      const button = item.querySelector(".routine-detail-button");
+      if (button) button.textContent = "Animated tutorial";
+      updateExerciseDemoMedia(demoKey, media.gifUrl, media.instructions || [], "Animated demo");
       matches += 1;
     } else {
-      badge.textContent = "Local PNG";
-      apiPill.textContent = "PNG fallback";
+      item.classList.remove("has-demo-media");
+      const button = item.querySelector(".routine-detail-button");
+      if (button) button.textContent = "Open form guide";
+      updateExerciseDemoMedia(demoKey, image.src, [], "Form guide");
     }
   });
 
-  $("#apiStatus").textContent = matches
-    ? `${matches} free ExerciseDB GIF${matches === 1 ? "" : "s"} matched. PNG fallback covers the rest.`
-    : "ExerciseDB did not return close GIF matches for this day, so local PNGs are shown.";
+  return matches;
 }
 
-async function loadExerciseMedia(name, slug, mediaQuery) {
+async function loadExerciseMedia(name, slug, mediaQuery, demoKey = slug) {
   const key = `${slug}:${mediaQuery}`;
-  if (exerciseMediaCache.has(key)) return { slug, media: exerciseMediaCache.get(key) };
+  if (exerciseMediaCache.has(key)) return { demoKey, media: exerciseMediaCache.get(key) };
 
   try {
     const response = await fetch(`https://oss.exercisedb.dev/api/v1/exercises?name=${encodeURIComponent(mediaQuery)}&limit=12`);
@@ -401,10 +591,10 @@ async function loadExerciseMedia(name, slug, mediaQuery) {
     const best = findBestExerciseMatch(payload.data || [], mediaQuery, name);
     const media = best?.gifUrl ? best : null;
     exerciseMediaCache.set(key, media);
-    return { slug, media };
+    return { demoKey, media };
   } catch {
     exerciseMediaCache.set(key, null);
-    return { slug, media: null };
+    return { demoKey, media: null };
   }
 }
 
@@ -415,6 +605,7 @@ function findBestExerciseMatch(items, query, displayName) {
 
   items.forEach((item) => {
     const candidate = normalizeExerciseTerms(item.name);
+    if (!equipmentTermsMatch(terms, candidate)) return;
     const score = terms.reduce((sum, term) => sum + (candidate.includes(term) ? 1 : 0), 0);
     const weightedScore = score + (candidate === terms.join(" ") ? 2 : 0);
     if (weightedScore > bestScore) {
@@ -423,7 +614,13 @@ function findBestExerciseMatch(items, query, displayName) {
     }
   });
 
-  return bestScore >= Math.min(2, terms.length) ? best : null;
+  const requiredScore = terms.length <= 2 ? terms.length : terms.length - 1;
+  return bestScore >= requiredScore ? best : null;
+}
+
+function equipmentTermsMatch(queryTerms, candidateTerms) {
+  const strictTerms = ["barbell", "dumbbell", "cable", "rope", "machine"];
+  return strictTerms.every((term) => !queryTerms.includes(term) || candidateTerms.includes(term));
 }
 
 function normalizeExerciseTerms(value) {
@@ -433,14 +630,6 @@ function normalizeExerciseTerms(value) {
     .replace(/[^a-z0-9 ]/g, " ")
     .split(/\s+/)
     .filter((term) => term.length > 2 && !stopWords.has(term));
-}
-
-function youtubeSearchUrl(query) {
-  return `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-}
-
-function exerciseDbSearchUrl(query) {
-  return `https://oss.exercisedb.dev/api/v1/exercises?name=${encodeURIComponent(query)}&limit=12`;
 }
 
 function renderMetrics() {
@@ -604,6 +793,129 @@ function drawEmptyChart(ctx, width, height) {
   ctx.fillStyle = "#64748b";
   ctx.font = "800 24px Inter, system-ui, sans-serif";
   ctx.fillText("Add a weight entry to draw your trend.", 250, 210);
+}
+
+function updateExerciseDemoMedia(demoKey, mediaSrc, steps = [], tutorialType = "Form guide") {
+  const details = exerciseDemoDetails.get(demoKey);
+  if (!details) return;
+  exerciseDemoDetails.set(demoKey, { ...details, mediaSrc, steps, tutorialType });
+}
+
+function openExerciseDemo(demoKey) {
+  const details = exerciseDemoDetails.get(demoKey);
+  if (!details) return;
+
+  const modal = $("#demoModal");
+  const image = $("#demoModalImage");
+  image.src = details.mediaSrc;
+  image.alt = `${details.name} form demo`;
+  $("#demoModalMuscle").textContent = details.primaryMuscle;
+  $("#demoModalTitle").textContent = details.name;
+  $("#demoModalMeta").innerHTML = `
+    <span>${details.sets}</span>
+    <span>${details.progression}</span>
+    <span>${details.tutorialType}</span>
+  `;
+  const stepsMarkup = details.steps?.length
+    ? `<ol>${details.steps.map((step) => `<li>${step.replace(/^Step:?\\s*\\d+\\s*/i, "")}</li>`).join("")}</ol>`
+    : "";
+  $("#demoModalGuidance").innerHTML = `
+    <p><strong>How:</strong> ${details.how}</p>
+    ${stepsMarkup}
+    <p><strong>Benefits:</strong> ${details.benefits}</p>
+  `;
+  modal.classList.add("open");
+  modal.setAttribute("aria-hidden", "false");
+  document.body.classList.add("modal-open");
+  activeDemoKey = demoKey;
+  renderShortsPlayer(demoKey);
+}
+
+function closeExerciseDemo() {
+  const modal = $("#demoModal");
+  if (!modal?.classList.contains("open")) return;
+  modal.classList.remove("open");
+  modal.setAttribute("aria-hidden", "true");
+  document.body.classList.remove("modal-open");
+  $("#demoModalImage").removeAttribute("src");
+  activeDemoKey = "";
+}
+
+function handleShortsSubmit(event) {
+  event.preventDefault();
+  if (!activeDemoKey) return;
+  const details = exerciseDemoDetails.get(activeDemoKey);
+  if (!details) return;
+  const url = $("#shortsUrl").value.trim();
+  const videoId = parseYouTubeVideoId(url);
+  if (!videoId) {
+    $("#shortsPlayer").innerHTML = "<p>Paste a valid YouTube Shorts or YouTube video URL.</p>";
+    return;
+  }
+  state.shorts = { ...(state.shorts || {}), [activeDemoKey]: videoId };
+  saveState();
+  saveServerTutorial(details.slug, videoId);
+  details.youtubeId = videoId;
+  renderShortsPlayer(activeDemoKey);
+}
+
+function clearCurrentShort() {
+  if (!activeDemoKey) return;
+  const details = exerciseDemoDetails.get(activeDemoKey);
+  const nextShorts = { ...(state.shorts || {}) };
+  delete nextShorts[activeDemoKey];
+  state.shorts = nextShorts;
+  saveState();
+  if (details) {
+    saveServerTutorial(details.slug, "");
+    details.youtubeId = youtubeTutorials[details.slug] || "";
+  }
+  renderShortsPlayer(activeDemoKey);
+}
+
+function renderShortsPlayer(demoKey) {
+  const details = exerciseDemoDetails.get(demoKey);
+  const savedVideoId = state.shorts?.[demoKey];
+  const autoVideoId = details?.youtubeId || "";
+  const videoId = savedVideoId || autoVideoId;
+  $("#shortsPanelTitle").textContent = CURATOR_MODE ? "Curate exercise tutorial" : "Tutorial";
+  $("#shortsUrl").value = savedVideoId ? `https://www.youtube.com/shorts/${savedVideoId}` : "";
+  $("#clearShort").disabled = !savedVideoId;
+  if (!videoId) {
+    $("#shortsPlayer").innerHTML = CURATOR_MODE
+      ? "<p>Paste a YouTube Shorts or video URL below, preview it here, then save it as the verified tutorial.</p>"
+      : "<p>No verified video has been added for this exercise yet. Use the animated/form guide below.</p>";
+    return;
+  }
+  $("#shortsPlayer").innerHTML = `
+    ${autoVideoId && !savedVideoId ? '<span class="auto-short-label">Verified</span>' : ""}
+    <iframe
+      title="YouTube Shorts tutorial"
+      src="https://www.youtube-nocookie.com/embed/${videoId}"
+      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+      allowfullscreen></iframe>
+  `;
+}
+
+function getCuratedTutorialId(slug) {
+  return serverTutorials[slug]?.videoId || youtubeTutorials[slug] || "";
+}
+
+function parseYouTubeVideoId(value) {
+  try {
+    const url = new URL(value);
+    if (url.hostname.includes("youtu.be")) return cleanVideoId(url.pathname.slice(1));
+    if (url.pathname.startsWith("/shorts/")) return cleanVideoId(url.pathname.split("/")[2]);
+    if (url.pathname.startsWith("/embed/")) return cleanVideoId(url.pathname.split("/")[2]);
+    return cleanVideoId(url.searchParams.get("v"));
+  } catch {
+    return cleanVideoId(value);
+  }
+}
+
+function cleanVideoId(value) {
+  const match = String(value || "").match(/^[a-zA-Z0-9_-]{11}$/);
+  return match ? match[0] : "";
 }
 
 function renderSuggestion() {
