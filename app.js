@@ -5,7 +5,9 @@ const exerciseImageSrc = "assets/exercises/exercise-demo.gif";
 
 const defaultState = {
   logs: [],
+  workouts: [],
   shorts: {},
+  activeWorkout: null,
   preferences: {
     goal: "balanced",
     experience: "beginner",
@@ -174,6 +176,8 @@ const progressionSteps = [
   "Deload every 5-7 hard weeks by reducing load 10-15% or cutting one set from each movement.",
 ];
 
+const prepActivities = ["Running", "Swimming", "Sauna", "Warm-up", "Mobility", "Other"];
+
 const $ = (selector) => document.querySelector(selector);
 
 let state = loadState();
@@ -237,6 +241,7 @@ async function init() {
   $("#preferencesForm").addEventListener("submit", handlePreferencesSubmit);
   $("#refreshPlan").addEventListener("click", renderSuggestion);
   $("#resetDemo").addEventListener("click", resetData);
+  $("#startWorkout").addEventListener("click", startWorkout);
   $("#shortsForm").addEventListener("submit", handleShortsSubmit);
   $("#clearShort").addEventListener("click", clearCurrentShort);
   $("#autoFillTutorials").addEventListener("click", autoFillTutorials);
@@ -361,6 +366,7 @@ function resetData() {
 function render() {
   renderMetrics();
   renderWeeklyPlan();
+  renderWorkoutRunner();
   renderChart();
   renderSuggestion();
   renderHistory();
@@ -371,6 +377,7 @@ function renderWeeklyPlan() {
   exerciseDemoDetails.clear();
   renderRoutineOverview();
   renderHeroMedia(activeDay);
+  $("#startWorkout").textContent = state.activeWorkout ? "Resume workout" : `Start ${activeDay.day}`;
 
   const progressionList = $("#progressionList");
   progressionList.innerHTML = "";
@@ -486,6 +493,358 @@ function renderHeroMedia(activeDay) {
   });
 }
 
+function startWorkout() {
+  if (state.activeWorkout) {
+    renderWorkoutRunner();
+    $("#workoutRunner").scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+  const activeDay = weeklyProgram[activeProgramDay];
+  state.activeWorkout = {
+    id: `workout-${Date.now()}`,
+    date: todayISO(),
+    dayIndex: activeProgramDay,
+    stepIndex: -1,
+    startedAt: new Date().toISOString(),
+    prep: [],
+    exercises: activeDay.exercises.map(([name, sets, note, slug]) => ({
+      name,
+      sets,
+      note,
+      slug,
+      loggedSets: [],
+      completed: false,
+    })),
+  };
+  saveState();
+  renderWorkoutRunner();
+  $("#workoutRunner").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function cancelWorkout() {
+  const confirmed = confirm("End this workout without saving it?");
+  if (!confirmed) return;
+  state.activeWorkout = null;
+  saveState();
+  renderWorkoutRunner();
+}
+
+function renderWorkoutRunner() {
+  const runner = $("#workoutRunner");
+  const workout = state.activeWorkout;
+  if (!workout) {
+    runner.className = "workout-runner workout-runner-empty";
+    runner.innerHTML = "";
+    return;
+  }
+
+  const activeDay = weeklyProgram[workout.dayIndex] || weeklyProgram[0];
+  const totalSteps = workout.exercises.length;
+  const completedExercises = workout.exercises.filter((exercise) => exercise.completed).length;
+  const currentNumber = workout.stepIndex < 0 ? 0 : Math.min(workout.stepIndex + 1, totalSteps);
+  runner.className = "workout-runner active";
+  runner.innerHTML = `
+    <div class="runner-shell">
+      <div class="runner-topline">
+        <div>
+          <p class="section-kicker">Workout mode</p>
+          <h2>${activeDay.day} - ${activeDay.title}</h2>
+          <p>${activeDay.focus}</p>
+        </div>
+        <button class="runner-ghost" type="button" data-runner-action="cancel">End</button>
+      </div>
+      <div class="runner-progress" aria-label="Workout progress">
+        <span style="width: ${Math.round((completedExercises / Math.max(totalSteps, 1)) * 100)}%"></span>
+      </div>
+      <div class="runner-step-label">${workout.stepIndex < 0 ? "Prep" : `Exercise ${currentNumber} of ${totalSteps}`}</div>
+      <div id="runnerStep"></div>
+    </div>
+  `;
+
+  runner.querySelector('[data-runner-action="cancel"]').addEventListener("click", cancelWorkout);
+  if (workout.stepIndex < 0) renderPrepStep(workout);
+  else if (workout.stepIndex >= totalSteps) renderFinishStep(workout, activeDay);
+  else renderExerciseStep(workout, activeDay);
+}
+
+function renderPrepStep(workout) {
+  const step = $("#runnerStep");
+  const prepRows = workout.prep.map((item, index) => `
+    <li>
+      <strong>${escapeHtml(item.type)}</strong>
+      <span>${item.minutes || 0} min${item.distance ? ` - ${item.distance} mi` : ""}</span>
+      <button type="button" data-remove-prep="${index}" aria-label="Remove ${escapeHtml(item.type)}">Remove</button>
+    </li>
+  `).join("");
+
+  step.innerHTML = `
+    <div class="runner-card prep-card">
+      <div>
+        <p class="section-kicker">Before lifting</p>
+        <h3>Add pre-workout activity</h3>
+        <p>Track running, swimming, sauna, mobility, or warm-up time before the programmed workout.</p>
+      </div>
+      <form class="prep-form" id="prepForm">
+        <label>
+          <span>Activity</span>
+          <select id="prepType">${prepActivities.map((activity) => `<option>${escapeHtml(activity)}</option>`).join("")}</select>
+        </label>
+        <label>
+          <span>Minutes</span>
+          <input id="prepMinutes" type="number" min="0" max="240" step="1" inputmode="numeric" placeholder="10" />
+        </label>
+        <label>
+          <span>Distance</span>
+          <input id="prepDistance" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="Optional" />
+        </label>
+        <button type="submit">Add</button>
+      </form>
+      <ul class="prep-list">${prepRows || "<li><span>No prep logged yet</span></li>"}</ul>
+      <div class="runner-actions">
+        <button class="button secondary" type="button" data-runner-action="skip-prep">Skip prep</button>
+        <button class="button primary" type="button" data-runner-action="next">Begin first exercise</button>
+      </div>
+    </div>
+  `;
+
+  $("#prepForm").addEventListener("submit", handlePrepSubmit);
+  step.querySelectorAll("[data-remove-prep]").forEach((button) => {
+    button.addEventListener("click", () => removePrep(Number(button.dataset.removePrep)));
+  });
+  step.querySelector('[data-runner-action="skip-prep"]').addEventListener("click", goToNextWorkoutStep);
+  step.querySelector('[data-runner-action="next"]').addEventListener("click", goToNextWorkoutStep);
+}
+
+function handlePrepSubmit(event) {
+  event.preventDefault();
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  const minutes = Number($("#prepMinutes").value || 0);
+  const distance = Number($("#prepDistance").value || 0);
+  workout.prep.push({
+    type: $("#prepType").value,
+    minutes,
+    distance,
+  });
+  saveState();
+  renderWorkoutRunner();
+}
+
+function removePrep(index) {
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  workout.prep.splice(index, 1);
+  saveState();
+  renderWorkoutRunner();
+}
+
+function renderExerciseStep(workout, activeDay) {
+  const step = $("#runnerStep");
+  const exercise = workout.exercises[workout.stepIndex];
+  const primaryMuscle = getPrimaryMuscle(exercise.name, activeDay);
+  const setRows = exercise.loggedSets.map((set, index) => `
+    <li>
+      <strong>Set ${index + 1}</strong>
+      <span>${set.reps ? `${set.reps} reps` : `${set.seconds || 0} sec`}${set.weight ? ` - ${set.weight} lb` : ""}${set.note ? ` - ${escapeHtml(set.note)}` : ""}</span>
+      <button type="button" data-remove-set="${index}" aria-label="Remove set ${index + 1}">Remove</button>
+    </li>
+  `).join("");
+  const targetSets = getTargetSetCount(exercise.sets);
+  const isTimed = exercise.sets.toLowerCase().includes("sec") || exercise.name.toLowerCase().includes("hold");
+  const canFinish = exercise.loggedSets.length > 0;
+
+  step.innerHTML = `
+    <div class="runner-card exercise-run-card">
+      <div class="runner-exercise-media">
+        <img src="${exerciseImageSrc}" alt="${exercise.name} illustration" />
+      </div>
+      <div class="runner-exercise-main">
+        <p class="section-kicker">${primaryMuscle}</p>
+        <h3>${exercise.name}</h3>
+        <div class="exercise-meta">
+          <span>${exercise.sets}</span>
+          <span>${exercise.loggedSets.length}/${targetSets} sets</span>
+        </div>
+        <p>${exercise.note}</p>
+        <form class="set-form" id="setForm">
+          <label>
+            <span>${isTimed ? "Seconds" : "Reps"}</span>
+            <input id="setReps" type="number" min="0" max="999" step="1" inputmode="numeric" placeholder="${isTimed ? "30" : "10"}" required />
+          </label>
+          <label>
+            <span>Weight</span>
+            <input id="setWeight" type="number" min="0" max="1500" step="2.5" inputmode="decimal" placeholder="Optional" />
+          </label>
+          <label class="wide">
+            <span>Set note</span>
+            <input id="setNote" type="text" placeholder="Clean, hard, assisted, pain-free..." />
+          </label>
+          <button type="submit">Add set</button>
+        </form>
+        <ul class="set-list">${setRows || "<li><span>No sets logged yet</span></li>"}</ul>
+        <div class="runner-actions">
+          <button class="button secondary" type="button" data-runner-action="previous">Back</button>
+          <button class="button primary" type="button" data-runner-action="next" ${canFinish ? "" : "disabled"}>${workout.stepIndex === workout.exercises.length - 1 ? "Finish exercises" : "Complete and next"}</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  $("#setForm").addEventListener("submit", handleSetSubmit);
+  step.querySelectorAll("[data-remove-set]").forEach((button) => {
+    button.addEventListener("click", () => removeSet(Number(button.dataset.removeSet)));
+  });
+  step.querySelector('[data-runner-action="previous"]').addEventListener("click", goToPreviousWorkoutStep);
+  step.querySelector('[data-runner-action="next"]').addEventListener("click", completeExerciseAndContinue);
+}
+
+function handleSetSubmit(event) {
+  event.preventDefault();
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  const exercise = workout.exercises[workout.stepIndex];
+  const isTimed = exercise.sets.toLowerCase().includes("sec") || exercise.name.toLowerCase().includes("hold");
+  const amount = Number($("#setReps").value || 0);
+  exercise.loggedSets.push({
+    reps: isTimed ? 0 : amount,
+    seconds: isTimed ? amount : 0,
+    weight: Number($("#setWeight").value || 0),
+    note: $("#setNote").value.trim(),
+  });
+  saveState();
+  renderWorkoutRunner();
+}
+
+function removeSet(index) {
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  workout.exercises[workout.stepIndex].loggedSets.splice(index, 1);
+  saveState();
+  renderWorkoutRunner();
+}
+
+function completeExerciseAndContinue() {
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  workout.exercises[workout.stepIndex].completed = true;
+  workout.stepIndex += 1;
+  saveState();
+  renderWorkoutRunner();
+}
+
+function goToNextWorkoutStep() {
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  workout.stepIndex += 1;
+  saveState();
+  renderWorkoutRunner();
+}
+
+function goToPreviousWorkoutStep() {
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  workout.stepIndex = Math.max(-1, workout.stepIndex - 1);
+  saveState();
+  renderWorkoutRunner();
+}
+
+function renderFinishStep(workout, activeDay) {
+  const step = $("#runnerStep");
+  const totalSets = workout.exercises.reduce((sum, exercise) => sum + exercise.loggedSets.length, 0);
+  const prepMinutes = workout.prep.reduce((sum, item) => sum + Number(item.minutes || 0), 0);
+  const elapsedMinutes = Math.max(1, Math.round((Date.now() - new Date(workout.startedAt).getTime()) / 60000));
+  const latestWeight = [...state.logs].sort((a, b) => b.date.localeCompare(a.date)).find((entry) => entry.weight)?.weight || "";
+  step.innerHTML = `
+    <div class="runner-card finish-card">
+      <p class="section-kicker">Done</p>
+      <h3>Save ${activeDay.title} workout</h3>
+      <div class="finish-stats">
+        <span><strong>${workout.exercises.filter((exercise) => exercise.completed).length}</strong> exercises</span>
+        <span><strong>${totalSets}</strong> sets</span>
+        <span><strong>${prepMinutes}</strong> prep min</span>
+      </div>
+      <form class="finish-form" id="finishWorkoutForm">
+        <label>
+          <span>Body weight</span>
+          <input id="finishWeight" type="number" min="40" max="700" step="0.1" inputmode="decimal" value="${latestWeight}" placeholder="Optional" />
+        </label>
+        <label>
+          <span>Total minutes</span>
+          <input id="finishMinutes" type="number" min="1" max="600" step="1" inputmode="numeric" value="${Math.max(elapsedMinutes, prepMinutes)}" required />
+        </label>
+        <label class="wide">
+          <span>Workout notes</span>
+          <textarea id="finishNotes" rows="3" placeholder="Energy, best set, soreness, swimming, sauna, anything useful for next time."></textarea>
+        </label>
+        <div class="runner-actions wide">
+          <button class="button secondary" type="button" data-runner-action="previous">Back</button>
+          <button class="button primary" type="submit">Save workout</button>
+        </div>
+      </form>
+    </div>
+  `;
+  $("#finishWorkoutForm").addEventListener("submit", finishWorkout);
+  step.querySelector('[data-runner-action="previous"]').addEventListener("click", goToPreviousWorkoutStep);
+}
+
+function finishWorkout(event) {
+  event.preventDefault();
+  const workout = state.activeWorkout;
+  if (!workout) return;
+  const activeDay = weeklyProgram[workout.dayIndex] || weeklyProgram[0];
+  const summary = buildWorkoutSummary(workout, activeDay);
+  const weight = Number($("#finishWeight").value || 0);
+  const minutes = Number($("#finishMinutes").value || 0);
+  const notes = $("#finishNotes").value.trim();
+  const savedWorkout = {
+    ...workout,
+    finishedAt: new Date().toISOString(),
+    minutes,
+    weight,
+    notes,
+    summary,
+  };
+  state.workouts = [...(state.workouts || []), savedWorkout].slice(-30);
+  state.logs = state.logs.filter((entry) => entry.date !== workout.date);
+  state.logs.push({
+    date: workout.date,
+    weight,
+    minutes,
+    workoutType: activeDay.title,
+    notes: notes ? `${summary} ${notes}` : summary,
+    workoutId: workout.id,
+  });
+  state.logs.sort((a, b) => a.date.localeCompare(b.date));
+  activeProgramDay = (workout.dayIndex + 1) % weeklyProgram.length;
+  state.activeWorkout = null;
+  saveState();
+  $("#logDate").value = todayISO();
+  render();
+}
+
+function buildWorkoutSummary(workout, activeDay) {
+  const prep = workout.prep.map((item) => `${item.type} ${item.minutes || 0}m${item.distance ? `/${item.distance}mi` : ""}`).join(", ");
+  const exerciseSummary = workout.exercises
+    .filter((exercise) => exercise.loggedSets.length > 0)
+    .map((exercise) => `${exercise.name}: ${exercise.loggedSets.length} sets`)
+    .join("; ");
+  return `${activeDay.day} ${activeDay.title}${prep ? ` | Prep: ${prep}` : ""}${exerciseSummary ? ` | ${exerciseSummary}` : ""}`;
+}
+
+function getTargetSetCount(sets) {
+  const match = String(sets).match(/^(\d+)/);
+  return match ? Number(match[1]) : 3;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function getPrimaryMuscle(name, activeDay) {
   const lower = name.toLowerCase();
   if (lower.includes("leg press")) return "Legs";
@@ -544,7 +903,9 @@ function getExerciseBenefits(name, activeDay) {
 function renderMetrics() {
   const sortedLogs = [...state.logs].sort((a, b) => a.date.localeCompare(b.date));
   const latest = sortedLogs.at(-1);
-  const previous = sortedLogs.at(-2);
+  const weightLogs = sortedLogs.filter((entry) => Number(entry.weight) > 0);
+  const latestWeight = weightLogs.at(-1);
+  const previousWeight = weightLogs.at(-2);
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
@@ -553,12 +914,12 @@ function renderMetrics() {
     .reduce((sum, entry) => sum + entry.minutes, 0);
   const weeklyPercent = Math.min(100, Math.round((weeklyMinutes / 150) * 100));
   const readiness = calculateReadiness(weeklyMinutes, latest);
-  const weightChange = latest && previous ? latest.weight - previous.weight : 0;
+  const weightChange = latestWeight && previousWeight ? latestWeight.weight - previousWeight.weight : 0;
 
-  $("#currentWeight").textContent = latest ? `${latest.weight.toFixed(1)} lb` : "--";
+  $("#currentWeight").textContent = latestWeight ? `${latestWeight.weight.toFixed(1)} lb` : "--";
   $("#weeklyMinutes").textContent = `${weeklyMinutes} min`;
   $("#goalFocus").textContent = goalLabels[state.preferences.goal];
-  $("#weightDelta").textContent = latest && previous ? `${weightChange >= 0 ? "+" : ""}${weightChange.toFixed(1)} lb from last log` : "Add first entry";
+  $("#weightDelta").textContent = latestWeight && previousWeight ? `${weightChange >= 0 ? "+" : ""}${weightChange.toFixed(1)} lb from last weigh-in` : "Add first weigh-in";
   $("#weeklyTarget").textContent = `${weeklyPercent}% of weekly target`;
   $("#equipmentFocus").textContent = equipmentLabels[state.preferences.equipment];
   $("#readinessScore").textContent = latest ? readiness.score : "--";
@@ -624,7 +985,7 @@ function renderChart() {
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, width, height);
 
-  const logs = state.logs.slice(-14);
+  const logs = state.logs.filter((entry) => Number(entry.weight) > 0).slice(-14);
   if (logs.length === 0) {
     drawEmptyChart(ctx, width, height);
     $("#trendText").textContent = "No entries yet";
@@ -891,7 +1252,7 @@ function renderHistory() {
     summary.append(type, notes);
     const stats = document.createElement("span");
     stats.className = "history-stats";
-    stats.textContent = `${entry.weight.toFixed(1)} lb - ${entry.minutes} min`;
+    stats.textContent = `${Number(entry.weight) > 0 ? `${entry.weight.toFixed(1)} lb - ` : ""}${entry.minutes} min`;
     item.append(date, summary, stats);
     list.appendChild(item);
   });

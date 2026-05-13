@@ -310,6 +310,13 @@ button {
   line-height: 1.65;
 }
 
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
 .hero-media {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -389,6 +396,227 @@ button {
 .readiness-card p {
   margin: 0;
   line-height: 1.4;
+}
+
+.workout-runner {
+  margin-bottom: 18px;
+}
+
+.workout-runner-empty {
+  display: none;
+}
+
+.runner-shell {
+  border: 1px solid rgba(220, 227, 231, 0.95);
+  border-radius: 22px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: var(--shadow);
+}
+
+.runner-topline {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+
+.runner-topline h2 {
+  margin: 5px 0 4px;
+  font-size: 1.55rem;
+}
+
+.runner-topline p:last-child {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.runner-ghost {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0 14px;
+  background: #ffffff;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.runner-progress {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft);
+}
+
+.runner-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--teal), var(--gold));
+  transition: width 200ms ease;
+}
+
+.runner-step-label {
+  margin: 12px 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.runner-card {
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 16px;
+  background: rgba(248, 250, 252, 0.92);
+}
+
+.runner-card h3 {
+  margin: 6px 0 8px;
+  font-size: 1.55rem;
+  line-height: 1.05;
+}
+
+.runner-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.prep-form,
+.set-form,
+.finish-form {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.set-form,
+.finish-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.prep-form button,
+.set-form button,
+.finish-form button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 12px;
+  align-self: end;
+  background: var(--navy);
+  color: #ffffff;
+  font-weight: 900;
+}
+
+.prep-list,
+.set-list {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.prep-list li,
+.set-list li {
+  display: grid;
+  grid-template-columns: minmax(0, 0.55fr) minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  min-height: 46px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: #ffffff;
+}
+
+.prep-list span,
+.set-list span {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.prep-list button,
+.set-list button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0 10px;
+  background: var(--soft);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.runner-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.runner-actions .button {
+  width: 100%;
+  min-height: 52px;
+}
+
+.runner-actions .button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.exercise-run-card {
+  display: grid;
+  grid-template-columns: 170px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.runner-exercise-media {
+  display: grid;
+  place-items: center;
+  min-height: 180px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 16px;
+  padding: 12px;
+  background:
+    linear-gradient(145deg, #ffffff, rgba(223, 247, 237, 0.52));
+}
+
+.runner-exercise-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.runner-exercise-main > p {
+  margin-bottom: 12px;
+}
+
+.finish-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 14px 0;
+}
+
+.finish-stats span {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.finish-stats strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.45rem;
 }
 
 .metrics-grid {
@@ -1507,9 +1735,22 @@ textarea:focus {
   .plan-header,
   .plan-actions,
   .active-day-summary,
+  .runner-topline,
   .progression-panel {
     grid-template-columns: 1fr;
     flex-direction: column;
+  }
+
+  .exercise-run-card,
+  .prep-form,
+  .set-form,
+  .finish-form,
+  .finish-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .runner-exercise-media {
+    min-height: 150px;
   }
 
   .readiness-card {
@@ -1552,8 +1793,24 @@ textarea:focus {
   .form-grid,
   .history-item,
   .day-tabs,
-  .exercise-grid {
+  .exercise-grid,
+  .runner-actions,
+  .prep-list li,
+  .set-list li {
     grid-template-columns: 1fr;
+  }
+
+  .runner-shell {
+    border-radius: 18px;
+    padding: 14px;
+  }
+
+  .runner-card {
+    padding: 14px;
+  }
+
+  .runner-card h3 {
+    font-size: 1.35rem;
   }
 
   .routine-overview {

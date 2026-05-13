@@ -63,6 +63,10 @@
             <p class="section-kicker">Today's plan</p>
             <h2 id="heroPlanTitle">Personalized movement, measured daily.</h2>
             <p id="heroPlanText">Choose your goal, log the day, and PulsePlan will keep the next session realistic.</p>
+            <div class="hero-actions">
+              <button class="button primary" id="startWorkout" type="button">Start workout</button>
+              <a class="button secondary" href="#routineOverview">View split</a>
+            </div>
           </div>
           <div class="hero-media" id="heroMedia" aria-label="Featured exercises"></div>
           <div class="readiness-card">
@@ -71,6 +75,8 @@
             <p id="readinessText">No logs yet</p>
           </div>
         </section>
+
+        <section class="workout-runner" id="workoutRunner" aria-live="polite"></section>
 
         <section class="metrics-grid" aria-label="Key metrics">
           <article class="metric-tile">
@@ -172,6 +178,9 @@
                 <select id="workoutType">
                   <option>Strength</option>
                   <option>Cardio</option>
+                  <option>Running</option>
+                  <option>Swimming</option>
+                  <option>Sauna</option>
                   <option>Mobility</option>
                   <option>HIIT</option>
                   <option>Sport</option>
