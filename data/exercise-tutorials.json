@@ -1,1 +1,263 @@
-{}
+{
+  "barbell-bench-press": {
+    "videoId": "4Y2ZdHCOXok",
+    "source": "youtube",
+    "title": "How to PROPERLY Bench Press for Growth (5 Easy Steps)",
+    "channelTitle": "Jeremy Ethier",
+    "searchQuery": "barbell bench press exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:20.540Z"
+  },
+  "incline-dumbbell-press": {
+    "videoId": "0G2_XV7slIg",
+    "source": "youtube",
+    "title": "Grow Your Chest with the INCINE DUMBBELL PRESS | Mind Pump",
+    "channelTitle": "Mind Pump TV",
+    "searchQuery": "dumbbell incline bench press exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:22.781Z"
+  },
+  "weighted-chest-dips": {
+    "videoId": "yN6Q1UI_xkE",
+    "source": "youtube",
+    "title": "How To Do Dips For A Bigger Chest and Shoulders (Fix Mistakes!)",
+    "channelTitle": "Jeff Nippard",
+    "searchQuery": "chest dip exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:24.725Z"
+  },
+  "seated-dumbbell-shoulder-press": {
+    "videoId": "B-aVuyhvLHU",
+    "source": "youtube",
+    "title": "How to Do a Dumbbell Shoulder Press",
+    "channelTitle": "LIVESTRONG",
+    "searchQuery": "dumbbell shoulder press exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:26.689Z"
+  },
+  "cable-machine-lateral-raises": {
+    "videoId": "BGw_YA3KiHs",
+    "source": "youtube",
+    "title": "Cable Lateral Raise: The ONLY Guide You’ll Ever Need for 3D Shoulders",
+    "channelTitle": "Leo Fanner",
+    "searchQuery": "cable lateral raise exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:28.964Z"
+  },
+  "rope-pushdowns": {
+    "videoId": "-zLyUAo1gMw",
+    "source": "youtube",
+    "title": "How to do the CABLE TRICEP PUSHDOWN! | 2 Minute Tutorial",
+    "channelTitle": "Max Euceda",
+    "searchQuery": "triceps pushdown exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:30.948Z"
+  },
+  "reverse-grip-pushdowns": {
+    "videoId": "2-LAMcpzODU",
+    "source": "youtube",
+    "title": "How To: Tricep Pushdown (Life Fitness Cable)",
+    "channelTitle": "ScottHermanFitness",
+    "searchQuery": "reverse grip triceps pushdown exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:33.300Z"
+  },
+  "romanian-deadlift": {
+    "videoId": "5zmlnbWb-g4",
+    "source": "youtube",
+    "title": "Stop F*cking Up RDL's (PROPER FORM!)",
+    "channelTitle": "ATHLEAN-X™",
+    "searchQuery": "romanian deadlift exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:35.366Z"
+  },
+  "pull-ups-lat-pulldown": {
+    "videoId": "AOpi-p0cJkc",
+    "source": "youtube",
+    "title": "Beginner's Guide: Lat Pulldown",
+    "channelTitle": "SilverSneakers",
+    "searchQuery": "lat pulldown exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:37.392Z"
+  },
+  "chest-supported-dumbbell-row": {
+    "videoId": "gfUg6qWohTk",
+    "source": "youtube",
+    "title": "STOP F*cking Up Dumbbell Rows (PROPER FORM!)",
+    "channelTitle": "ATHLEAN-X™",
+    "searchQuery": "dumbbell row exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:39.384Z"
+  },
+  "rear-delt-cable-fly-reverse-pec-deck": {
+    "videoId": "dC7jhEk-29A",
+    "source": "youtube",
+    "title": "How to PROPERLY Reverse Pec Deck Fly (DO THIS)",
+    "channelTitle": "Colossus Fitness",
+    "searchQuery": "reverse pec deck exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:41.284Z"
+  },
+  "barbell-curl": {
+    "videoId": "jjnJHhzZUUM",
+    "source": "youtube",
+    "title": "STOP Doing Bicep Curls Like This (5 Mistakes Slowing Your Gains)",
+    "channelTitle": "Jeremy Ethier",
+    "searchQuery": "barbell curl exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:43.312Z"
+  },
+  "hammer-curl": {
+    "videoId": "BRVDS6HVR9Q",
+    "source": "youtube",
+    "title": "How To Perform HAMMER CURLS | Biceps Exercise Tutorial",
+    "channelTitle": "Buff Dudes Workouts",
+    "searchQuery": "hammer curl exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:45.200Z"
+  },
+  "squats": {
+    "videoId": "gcNh17Ckjgg",
+    "source": "youtube",
+    "title": "How to PROPERLY Squat for Growth (4 Easy Steps)",
+    "channelTitle": "Jeremy Ethier",
+    "searchQuery": "barbell squat exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:47.272Z"
+  },
+  "leg-press": {
+    "videoId": "K5n2vg3oZa4",
+    "source": "youtube",
+    "title": "How to PROPERLY Leg Press (FIX YOUR FORM NOW)",
+    "channelTitle": "Colossus Fitness",
+    "searchQuery": "leg press exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:49.386Z"
+  },
+  "lying-leg-curl": {
+    "videoId": "q1cKTmaeQWo",
+    "source": "youtube",
+    "title": "How to PROPERLY Hamstring Curl for Muscle Gain & Injury Prevention",
+    "channelTitle": "Colossus Fitness",
+    "searchQuery": "lying leg curl exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:51.479Z"
+  },
+  "standing-calf-raise": {
+    "videoId": "CtyIVeJH6lI",
+    "source": "youtube",
+    "title": "You're Doing Calf Raises WRONG | The Correct Way Taught By Physical Therapist",
+    "channelTitle": "Rehab and Revive",
+    "searchQuery": "standing calf raise exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:53.639Z"
+  },
+  "weighted-hanging-leg-raise-cable-crunch": {
+    "videoId": "Pr1ieGZ5atk",
+    "source": "youtube",
+    "title": "Hanging Leg Raise | HOW-TO",
+    "channelTitle": "ATHLEAN-X™",
+    "searchQuery": "hanging leg raise exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:55.633Z"
+  },
+  "dumbbell-bench-press": {
+    "videoId": "5Y3VZsLb1Ys",
+    "source": "youtube",
+    "title": "How To Do Dumbbell Bench Press Correctly",
+    "channelTitle": "Jack Hanrahan Fitness",
+    "searchQuery": "dumbbell bench press exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:57.761Z"
+  },
+  "cable-chest-fly": {
+    "videoId": "JUDTGZh4rhg",
+    "source": "youtube",
+    "title": "STOP F*cking Up Cable Flys (PROPER FORM!)",
+    "channelTitle": "ATHLEAN-X™",
+    "searchQuery": "cable chest fly exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:54:59.671Z"
+  },
+  "seated-cable-row-neutral-grip": {
+    "videoId": "vwHG9Jfu4sw",
+    "source": "youtube",
+    "title": "How to do the SEATED CABLE ROW! | 2 Minute Tutorial",
+    "channelTitle": "Max Euceda",
+    "searchQuery": "seated cable row exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:01.512Z"
+  },
+  "cable-lateral-raise": {
+    "videoId": "BGw_YA3KiHs",
+    "source": "youtube",
+    "title": "Cable Lateral Raise: The ONLY Guide You’ll Ever Need for 3D Shoulders",
+    "channelTitle": "Leo Fanner",
+    "searchQuery": "cable lateral raise exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:03.594Z"
+  },
+  "single-arm-rope-pushdown": {
+    "videoId": "Zl46Cxc4DDs",
+    "source": "youtube",
+    "title": "TUTORIAL TUESDAY: SINGLE ARM TRICEP CABLE PUSHDOWN",
+    "channelTitle": "Josh Leader",
+    "searchQuery": "single arm triceps pushdown exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:05.550Z"
+  },
+  "face-pulls": {
+    "videoId": "ljgqer1ZpXg",
+    "source": "youtube",
+    "title": "STOP F*cking Up Face Pulls (PROPER FORM!)",
+    "channelTitle": "ATHLEAN-X™",
+    "searchQuery": "face pull exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:07.714Z"
+  },
+  "arnold-press": {
+    "videoId": "ris9tKqMwgU",
+    "source": "youtube",
+    "title": "Stop F*cking Up The Arnold Press (PROPER FORM!)",
+    "channelTitle": "ATHLEAN-X™",
+    "searchQuery": "arnold press exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:09.795Z"
+  },
+  "rear-delt-raises": {
+    "videoId": "d1QEddtoOq0",
+    "source": "youtube",
+    "title": "How To Dumbbell Reverse Fly PROPERLY | MAXIMIZE REAR DELTS",
+    "channelTitle": "Colossus Fitness",
+    "searchQuery": "rear delt raise exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:11.797Z"
+  },
+  "preacher-curl-incline-dumbbell-curl": {
+    "videoId": "vngli9UR6Hw",
+    "source": "youtube",
+    "title": "Preacher Curls: Do This for Bigger Biceps | Dr. Jim Stoppani",
+    "channelTitle": "Jim Stoppani, PhD",
+    "searchQuery": "preacher curl exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:13.760Z"
+  },
+  "overhead-dumbbell-extension": {
+    "videoId": "fYqswDVbJDg",
+    "source": "youtube",
+    "title": "HOW TO: Overhead Triceps Extension (BEST EXERCISE FOR HUGE TRICEPS) || PERFECT FORM (POWERBOMB)",
+    "channelTitle": "ScottHermanFitness",
+    "searchQuery": "overhead dumbbell triceps extension exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:15.617Z"
+  },
+  "isometric-pushdown-hold": {
+    "videoId": "8WL0m0vLAPo",
+    "source": "youtube",
+    "title": "How to Do Triceps Push Downs",
+    "channelTitle": "LIVESTRONG",
+    "searchQuery": "triceps pushdown hold exercise proper form tutorial",
+    "autoFilled": true,
+    "updatedAt": "2026-05-13T14:55:17.737Z"
+  }
+}
