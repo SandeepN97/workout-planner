@@ -4,75 +4,175 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PulsePlan Workout Planner</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app-shell">
-      <aside class="sidebar" aria-label="Planner summary">
-        <div class="brand">
-          <div class="brand-mark" aria-hidden="true">P</div>
-          <div>
-            <p>PulsePlan</p>
-            <span>Daily training tracker</span>
-          </div>
-        </div>
+      <aside class="rail" aria-label="PulsePlan navigation">
+        <a class="brand" href="#overview" aria-label="PulsePlan home">
+          <span class="brand-mark" aria-hidden="true">P</span>
+          <span>
+            <strong>PulsePlan</strong>
+            <small>Training OS</small>
+          </span>
+        </a>
 
-        <section class="profile-panel">
-          <h1>Build the plan around you.</h1>
-          <p>
-            Track weight, log workouts, tune preferences, and get daily training suggestions that adjust as your goals change.
-          </p>
-        </section>
+        <nav class="nav-list" aria-label="Primary">
+          <a href="#overview" class="active">
+            <span aria-hidden="true">01</span>
+            Overview
+          </a>
+          <a href="#checkin">
+            <span aria-hidden="true">02</span>
+            Check-in
+          </a>
+          <a href="#preferences">
+            <span aria-hidden="true">03</span>
+            Goals
+          </a>
+          <a href="#history">
+            <span aria-hidden="true">04</span>
+            History
+          </a>
+        </nav>
 
-        <section class="metric-stack" aria-label="Key metrics">
-          <div class="metric-card">
-            <span>Current weight</span>
-            <strong id="currentWeight">--</strong>
-          </div>
-          <div class="metric-card">
-            <span>7-day exercise</span>
-            <strong id="weeklyMinutes">0 min</strong>
-          </div>
-          <div class="metric-card">
-            <span>Goal focus</span>
-            <strong id="goalFocus">Balanced</strong>
-          </div>
+        <section class="coach-brief" aria-label="Coach brief">
+          <p class="section-kicker">Coach brief</p>
+          <h2 id="coachBriefTitle">Build consistency first.</h2>
+          <p id="coachBriefText">Save a daily check-in to unlock trend-aware training guidance.</p>
         </section>
       </aside>
 
       <section class="workspace">
-        <header class="topbar">
+        <header class="topbar" id="overview">
           <div>
-            <p id="todayLabel"></p>
-            <h2>Workout planner</h2>
+            <p id="todayLabel" class="section-kicker"></p>
+            <h1>Workout planner</h1>
           </div>
-          <button class="ghost-button" id="resetDemo" type="button">Reset data</button>
+          <div class="topbar-actions">
+            <a class="site-link" href="https://sandeepn97.github.io/workout-planner/" target="_blank" rel="noreferrer">Live site</a>
+            <button class="button subtle" id="resetDemo" type="button">Reset</button>
+          </div>
         </header>
 
-        <section class="dashboard-grid">
-          <article class="panel log-panel">
+        <section class="hero-panel" aria-label="Training snapshot">
+          <div class="hero-copy">
+            <p class="section-kicker">Today's plan</p>
+            <h2 id="heroPlanTitle">Personalized movement, measured daily.</h2>
+            <p id="heroPlanText">Choose your goal, log the day, and PulsePlan will keep the next session realistic.</p>
+          </div>
+          <div class="readiness-card">
+            <span>Readiness</span>
+            <strong id="readinessScore">--</strong>
+            <p id="readinessText">No logs yet</p>
+          </div>
+        </section>
+
+        <section class="metrics-grid" aria-label="Key metrics">
+          <article class="metric-tile">
+            <span>Current weight</span>
+            <strong id="currentWeight">--</strong>
+            <small id="weightDelta">Add first entry</small>
+          </article>
+          <article class="metric-tile">
+            <span>7-day exercise</span>
+            <strong id="weeklyMinutes">0 min</strong>
+            <small id="weeklyTarget">Target: 150 min</small>
+          </article>
+          <article class="metric-tile">
+            <span>Goal focus</span>
+            <strong id="goalFocus">Balanced</strong>
+            <small id="equipmentFocus">Bodyweight</small>
+          </article>
+          <article class="metric-tile accent">
+            <span>Next move</span>
+            <strong id="nextMove">Check in</strong>
+            <small id="nextMoveDetail">Log today to calibrate</small>
+          </article>
+        </section>
+
+        <section class="training-plan" aria-label="Weekly training plan">
+          <div class="plan-header">
+            <div>
+              <p class="section-kicker">Weekly split</p>
+              <h2>Push, pull, legs, upper, shoulders and arms</h2>
+            </div>
+            <div class="progression-chip">
+              <span>Progression</span>
+              <strong>12 / 10 / 8</strong>
+            </div>
+          </div>
+
+          <div class="day-tabs" id="dayTabs" role="tablist" aria-label="Workout days"></div>
+          <div class="active-day-summary" id="activeDaySummary"></div>
+          <div class="api-strip">
+            <div>
+              <strong>Free media source</strong>
+              <span id="apiStatus">Local PNG fallback ready. ExerciseDB GIFs load when a match is available.</span>
+            </div>
+            <a href="https://oss.exercisedb.dev/docs" target="_blank" rel="noreferrer">ExerciseDB API</a>
+          </div>
+          <div class="exercise-grid" id="exerciseGrid"></div>
+
+          <div class="progression-panel">
+            <div>
+              <p class="section-kicker">How to progress</p>
+              <h3 id="progressionTitle">Beat the logbook without rushing the reps.</h3>
+            </div>
+            <ol id="progressionList"></ol>
+          </div>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel chart-panel">
             <div class="panel-heading">
               <div>
-                <span class="eyebrow">Daily check-in</span>
-                <h3>Log today</h3>
+                <p class="section-kicker">Progress</p>
+                <h2>Weight trend</h2>
+              </div>
+              <span id="trendText" class="status-pill">No entries yet</span>
+            </div>
+            <canvas id="weightChart" width="900" height="420" aria-label="Weight trend chart"></canvas>
+          </article>
+
+          <article class="panel suggestion-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Recommendation</p>
+                <h2 id="suggestionTitle">Ready when you are</h2>
+              </div>
+              <button class="icon-button" id="refreshPlan" type="button" aria-label="Refresh workout suggestion">
+                <span aria-hidden="true">R</span>
+              </button>
+            </div>
+            <div id="suggestionBody" class="suggestion-body"></div>
+          </article>
+
+          <article class="panel" id="checkin">
+            <div class="panel-heading">
+              <div>
+                <p class="section-kicker">Daily check-in</p>
+                <h2>Log today</h2>
               </div>
             </div>
-
             <form id="logForm" class="form-grid">
               <label>
-                Date
+                <span>Date</span>
                 <input id="logDate" type="date" required />
               </label>
               <label>
-                Weight
+                <span>Weight</span>
                 <input id="weight" type="number" min="40" max="700" step="0.1" placeholder="185.4" required />
               </label>
               <label>
-                Exercise minutes
+                <span>Exercise minutes</span>
                 <input id="minutes" type="number" min="0" max="600" step="5" placeholder="45" required />
               </label>
               <label>
-                Workout type
+                <span>Workout type</span>
                 <select id="workoutType">
                   <option>Strength</option>
                   <option>Cardio</option>
@@ -83,35 +183,23 @@
                 </select>
               </label>
               <label class="wide">
-                Notes
-                <textarea id="notes" rows="3" placeholder="How did it feel? Any soreness or wins?"></textarea>
+                <span>Notes</span>
+                <textarea id="notes" rows="3" placeholder="Energy, soreness, wins, or anything to adjust tomorrow."></textarea>
               </label>
-              <button class="primary-button wide" type="submit">Save daily log</button>
+              <button class="button primary wide" type="submit">Save daily log</button>
             </form>
           </article>
 
-          <article class="panel chart-panel">
+          <article class="panel" id="preferences">
             <div class="panel-heading">
               <div>
-                <span class="eyebrow">Progress</span>
-                <h3>Weight trend</h3>
-              </div>
-              <span id="trendText" class="status-pill">No entries yet</span>
-            </div>
-            <canvas id="weightChart" width="720" height="360" aria-label="Weight trend chart"></canvas>
-          </article>
-
-          <article class="panel preferences-panel">
-            <div class="panel-heading">
-              <div>
-                <span class="eyebrow">Preferences</span>
-                <h3>What do you want?</h3>
+                <p class="section-kicker">Preferences</p>
+                <h2>Design the plan</h2>
               </div>
             </div>
-
             <form id="preferencesForm" class="form-grid">
               <label>
-                Goal
+                <span>Goal</span>
                 <select id="goal">
                   <option value="balanced">Balanced fitness</option>
                   <option value="fat-loss">Fat loss</option>
@@ -121,7 +209,7 @@
                 </select>
               </label>
               <label>
-                Experience
+                <span>Experience</span>
                 <select id="experience">
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -129,7 +217,7 @@
                 </select>
               </label>
               <label>
-                Available time
+                <span>Available time</span>
                 <select id="availableTime">
                   <option value="20">20 minutes</option>
                   <option value="35">35 minutes</option>
@@ -138,7 +226,7 @@
                 </select>
               </label>
               <label>
-                Equipment
+                <span>Equipment</span>
                 <select id="equipment">
                   <option value="bodyweight">Bodyweight</option>
                   <option value="dumbbells">Dumbbells</option>
@@ -147,29 +235,18 @@
                 </select>
               </label>
               <label class="wide">
-                User request
-                <textarea id="userWant" rows="3" placeholder="Example: I want low-impact workouts and a stronger core."></textarea>
+                <span>User request</span>
+                <textarea id="userWant" rows="3" placeholder="Example: Low-impact workouts, more core, stronger legs."></textarea>
               </label>
-              <button class="secondary-button wide" type="submit">Update suggestions</button>
+              <button class="button secondary wide" type="submit">Update suggestions</button>
             </form>
           </article>
 
-          <article class="panel suggestion-panel">
+          <article class="panel history-panel" id="history">
             <div class="panel-heading">
               <div>
-                <span class="eyebrow">Today's suggestion</span>
-                <h3 id="suggestionTitle">Ready when you are</h3>
-              </div>
-              <button class="icon-button" id="refreshPlan" type="button" aria-label="Refresh workout suggestion">R</button>
-            </div>
-            <div id="suggestionBody" class="suggestion-body"></div>
-          </article>
-
-          <article class="panel history-panel">
-            <div class="panel-heading">
-              <div>
-                <span class="eyebrow">History</span>
-                <h3>Recent logs</h3>
+                <p class="section-kicker">History</p>
+                <h2>Recent logs</h2>
               </div>
             </div>
             <div id="historyList" class="history-list"></div>
