@@ -70,9 +70,9 @@ const experienceAdjustments = {
   advanced: "Push one main block hard, then keep accessories crisp and controlled.",
 };
 
-// Add verified YouTube Shorts or video IDs here to auto-embed them per exercise.
-// YouTube does not support no-key search embeds from a static page, so this keeps
-// auto-included videos accurate instead of guessing from search results.
+// Add verified YouTube video IDs here to auto-embed them per exercise.
+// The deployed site also loads data/exercise-tutorials.json so users do not
+// need to paste tutorial URLs themselves.
 const youtubeTutorials = {
   // "barbell-bench-press": "YOUTUBE_VIDEO_ID",
 };
@@ -177,8 +177,6 @@ const $ = (selector) => document.querySelector(selector);
 
 let state = loadState();
 let activeProgramDay = 0;
-const exerciseMediaCache = new Map();
-let mediaRequestToken = 0;
 const exerciseDemoDetails = new Map();
 let activeDemoKey = "";
 
@@ -380,8 +378,6 @@ function renderWeeklyPlan() {
     item.textContent = step;
     progressionList.appendChild(item);
   });
-
-  hydrateRoutineMedia();
 }
 
 function renderRoutineOverview() {
@@ -542,94 +538,6 @@ function getExerciseBenefits(name, activeDay) {
   if (lower.includes("pushdown") || lower.includes("extension")) return "Targets triceps for stronger lockout, arm size, and pressing support.";
   if (lower.includes("crunch") || lower.includes("leg raise")) return "Trains trunk control, hip flexor strength, and visible core tension.";
   return `Supports ${activeDay.focus.toLowerCase()} while reinforcing clean technique and repeatable progression.`;
-}
-
-async function hydrateRoutineMedia() {
-  const token = (mediaRequestToken += 1);
-  const requests = [];
-  weeklyProgram.forEach((programDay) => {
-    programDay.exercises.forEach(([name, , , slug, mediaQuery]) => {
-      requests.push(loadExerciseMedia(name, slug, mediaQuery, `${programDay.id}--${slug}`));
-    });
-  });
-  const results = await Promise.allSettled(requests);
-  if (token !== mediaRequestToken) return;
-
-  let matches = 0;
-  results.forEach((result) => {
-    if (result.status !== "fulfilled" || !result.value) return;
-    const { demoKey, media } = result.value;
-    const item = document.querySelector(`[data-demo-key="${demoKey}"]`);
-    const image = item?.querySelector(".routine-thumb img");
-    if (!item || !image) return;
-    if (media?.gifUrl) {
-      image.src = media.gifUrl;
-      item.classList.add("has-demo-media");
-      const button = item.querySelector(".routine-detail-button");
-      if (button) button.textContent = "Animated tutorial";
-      updateExerciseDemoMedia(demoKey, media.gifUrl, media.instructions || [], "Animated demo");
-      matches += 1;
-    } else {
-      item.classList.remove("has-demo-media");
-      const button = item.querySelector(".routine-detail-button");
-      if (button) button.textContent = "Open form guide";
-      updateExerciseDemoMedia(demoKey, image.src, [], "Form guide");
-    }
-  });
-
-  return matches;
-}
-
-async function loadExerciseMedia(name, slug, mediaQuery, demoKey = slug) {
-  const key = `${slug}:${mediaQuery}`;
-  if (exerciseMediaCache.has(key)) return { demoKey, media: exerciseMediaCache.get(key) };
-
-  try {
-    const response = await fetch(`https://oss.exercisedb.dev/api/v1/exercises?name=${encodeURIComponent(mediaQuery)}&limit=12`);
-    if (!response.ok) throw new Error("ExerciseDB request failed");
-    const payload = await response.json();
-    const best = findBestExerciseMatch(payload.data || [], mediaQuery, name);
-    const media = best?.gifUrl ? best : null;
-    exerciseMediaCache.set(key, media);
-    return { demoKey, media };
-  } catch {
-    exerciseMediaCache.set(key, null);
-    return { demoKey, media: null };
-  }
-}
-
-function findBestExerciseMatch(items, query, displayName) {
-  const terms = normalizeExerciseTerms(query || displayName);
-  let best = null;
-  let bestScore = 0;
-
-  items.forEach((item) => {
-    const candidate = normalizeExerciseTerms(item.name);
-    if (!equipmentTermsMatch(terms, candidate)) return;
-    const score = terms.reduce((sum, term) => sum + (candidate.includes(term) ? 1 : 0), 0);
-    const weightedScore = score + (candidate === terms.join(" ") ? 2 : 0);
-    if (weightedScore > bestScore) {
-      best = item;
-      bestScore = weightedScore;
-    }
-  });
-
-  const requiredScore = terms.length <= 2 ? terms.length : terms.length - 1;
-  return bestScore >= requiredScore ? best : null;
-}
-
-function equipmentTermsMatch(queryTerms, candidateTerms) {
-  const strictTerms = ["barbell", "dumbbell", "cable", "rope", "machine"];
-  return strictTerms.every((term) => !queryTerms.includes(term) || candidateTerms.includes(term));
-}
-
-function normalizeExerciseTerms(value) {
-  const stopWords = new Set(["the", "and", "or", "with", "machine"]);
-  return value
-    .toLowerCase()
-    .replace(/[^a-z0-9 ]/g, " ")
-    .split(/\s+/)
-    .filter((term) => term.length > 2 && !stopWords.has(term));
 }
 
 function renderMetrics() {
@@ -795,12 +703,6 @@ function drawEmptyChart(ctx, width, height) {
   ctx.fillText("Add a weight entry to draw your trend.", 250, 210);
 }
 
-function updateExerciseDemoMedia(demoKey, mediaSrc, steps = [], tutorialType = "Form guide") {
-  const details = exerciseDemoDetails.get(demoKey);
-  if (!details) return;
-  exerciseDemoDetails.set(demoKey, { ...details, mediaSrc, steps, tutorialType });
-}
-
 function openExerciseDemo(demoKey) {
   const details = exerciseDemoDetails.get(demoKey);
   if (!details) return;
@@ -849,7 +751,7 @@ function handleShortsSubmit(event) {
   const url = $("#shortsUrl").value.trim();
   const videoId = parseYouTubeVideoId(url);
   if (!videoId) {
-    $("#shortsPlayer").innerHTML = "<p>Paste a valid YouTube Shorts or YouTube video URL.</p>";
+    $("#shortsPlayer").innerHTML = "<p>Paste a valid YouTube video URL.</p>";
     return;
   }
   state.shorts = { ...(state.shorts || {}), [activeDemoKey]: videoId };
@@ -861,36 +763,31 @@ function handleShortsSubmit(event) {
 
 function clearCurrentShort() {
   if (!activeDemoKey) return;
-  const details = exerciseDemoDetails.get(activeDemoKey);
   const nextShorts = { ...(state.shorts || {}) };
   delete nextShorts[activeDemoKey];
   state.shorts = nextShorts;
   saveState();
-  if (details) {
-    saveServerTutorial(details.slug, "");
-    details.youtubeId = youtubeTutorials[details.slug] || "";
-  }
   renderShortsPlayer(activeDemoKey);
 }
 
 function renderShortsPlayer(demoKey) {
   const details = exerciseDemoDetails.get(demoKey);
   const savedVideoId = state.shorts?.[demoKey];
-  const autoVideoId = details?.youtubeId || "";
+  const autoVideoId = details?.slug ? getCuratedTutorialId(details.slug) : "";
   const videoId = savedVideoId || autoVideoId;
-  $("#shortsPanelTitle").textContent = CURATOR_MODE ? "Curate exercise tutorial" : "Tutorial";
+  $("#shortsPanelTitle").textContent = CURATOR_MODE ? "Curate exercise tutorial" : "Video tutorial";
   $("#shortsUrl").value = savedVideoId ? `https://www.youtube.com/shorts/${savedVideoId}` : "";
   $("#clearShort").disabled = !savedVideoId;
   if (!videoId) {
     $("#shortsPlayer").innerHTML = CURATOR_MODE
-      ? "<p>Paste a YouTube Shorts or video URL below, preview it here, then save it as the verified tutorial.</p>"
-      : "<p>No verified video has been added for this exercise yet. Use the animated/form guide below.</p>";
+      ? "<p>Paste a YouTube URL below, preview it here, then save it for this exercise.</p>"
+      : "<p>No video tutorial has been added for this exercise yet. Use the form guide below.</p>";
     return;
   }
   $("#shortsPlayer").innerHTML = `
-    ${autoVideoId && !savedVideoId ? '<span class="auto-short-label">Verified</span>' : ""}
+    ${autoVideoId && !savedVideoId ? '<span class="auto-short-label">Auto added</span>' : ""}
     <iframe
-      title="YouTube Shorts tutorial"
+      title="${details?.name || "Exercise"} video tutorial"
       src="https://www.youtube-nocookie.com/embed/${videoId}"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen></iframe>
