@@ -1,6 +1,7 @@
 const storageKey = "pulseplan-state-v1";
 const API_BASE = window.location.protocol === "file:" ? "http://127.0.0.1:4174" : "";
 const CURATOR_MODE = new URLSearchParams(window.location.search).has("curate");
+const exerciseImageSrc = "assets/exercises/exercise-demo.gif";
 
 const defaultState = {
   logs: [],
@@ -418,7 +419,7 @@ function renderRoutineOverview() {
       thumb.setAttribute("aria-label", `Open ${name} tutorial`);
       thumb.addEventListener("click", () => openRoutineExerciseDemo(index, demoKey));
       const image = document.createElement("img");
-      image.src = `assets/exercises/${slug}.png`;
+      image.src = exerciseImageSrc;
       image.alt = `${name} illustration`;
       thumb.appendChild(image);
 
@@ -476,7 +477,7 @@ function renderHeroMedia(activeDay) {
     const frame = document.createElement("article");
     frame.className = `hero-exercise hero-exercise-${index + 1}`;
     const image = document.createElement("img");
-    image.src = `assets/exercises/${slug}.png`;
+    image.src = exerciseImageSrc;
     image.alt = `${name} preview`;
     const label = document.createElement("span");
     label.textContent = index === 0 ? dayAccents[activeDay.id] : name;

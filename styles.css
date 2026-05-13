@@ -264,7 +264,7 @@ button {
   padding: 28px;
   background:
     linear-gradient(120deg, rgba(16, 24, 32, 0.98), rgba(20, 125, 112, 0.91)),
-    url("assets/exercises/dumbbell-bench-press.png");
+    url("assets/exercises/exercise-demo.gif");
   background-size: cover;
   background-position: center;
   color: #ffffff;
@@ -324,6 +324,7 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.9);
+  padding: 10px;
 }
 
 .hero-exercise:first-child {
@@ -334,7 +335,7 @@ button {
   width: 100%;
   height: 100%;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .hero-exercise span {
@@ -853,7 +854,7 @@ button {
 }
 
 .exercise-card.has-api-media img {
-  object-fit: cover;
+  object-fit: contain;
 }
 
 .media-badge {
