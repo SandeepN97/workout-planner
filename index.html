@@ -3,316 +3,287 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PulsePlan Workout Planner</title>
+    <title>Home Automation Architecture</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js" defer></script>
+    <script src="app.js" defer></script>
   </head>
   <body>
-    <main class="app-shell">
-      <aside class="rail" aria-label="PulsePlan navigation">
-        <a class="brand" href="#overview" aria-label="PulsePlan home">
-          <span class="brand-mark" aria-hidden="true">P</span>
+    <aside class="side-rail" aria-label="Home OS navigation">
+      <a class="brand" href="#overview" aria-label="Home OS overview">
+        <span class="brand-mark"><i data-lucide="house"></i></span>
+        <span>
+          <strong>Nisha Home OS</strong>
+          <small>Automation architecture</small>
+        </span>
+      </a>
+      <nav class="nav-list" aria-label="Primary navigation">
+        <a class="active" href="#overview">Overview</a>
+        <a href="#layout">Layout</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#inventory">Devices</a>
+        <a href="#automations">Automations</a>
+        <a href="#rollout">Rollout</a>
+      </nav>
+      <section class="rail-card">
+          <p class="eyebrow">Design target</p>
+          <h2>One reliable apartment brain, many brand clouds.</h2>
+          <p>Use Home Assistant as the local control layer, with compact zones for a 764 sq.ft. one-bedroom.</p>
+      </section>
+    </aside>
+
+    <main class="page-shell">
+      <header class="mobile-topbar">
+        <a class="brand" href="#overview" aria-label="Home OS overview">
+          <span class="brand-mark"><i data-lucide="house"></i></span>
           <span>
-            <strong>PulsePlan</strong>
-            <small>Training OS</small>
+            <strong>Nisha Home OS</strong>
+            <small>Architecture</small>
           </span>
         </a>
+        <button class="icon-button" id="menuToggle" type="button" aria-label="Open navigation" aria-controls="mobileMenu" aria-expanded="false">
+          <i data-lucide="menu"></i>
+        </button>
+      </header>
 
-        <nav class="nav-list" aria-label="Primary">
-          <a href="#overview" class="active">
-            <span aria-hidden="true">01</span>
-            Overview
-          </a>
-          <a href="#checkin">
-            <span aria-hidden="true">02</span>
-            Check-in
-          </a>
-          <a href="#preferences">
-            <span aria-hidden="true">03</span>
-            Goals
-          </a>
-          <a href="#history">
-            <span aria-hidden="true">04</span>
-            History
-          </a>
-        </nav>
+      <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation">
+        <a href="#overview">Overview</a>
+        <a href="#layout">Layout</a>
+        <a href="#architecture">Architecture</a>
+        <a href="#inventory">Devices</a>
+        <a href="#automations">Automations</a>
+        <a href="#rollout">Rollout</a>
+      </nav>
 
-        <section class="coach-brief" aria-label="Coach brief">
-          <p class="section-kicker">Coach brief</p>
-          <h2 id="coachBriefTitle">Build consistency first.</h2>
-          <p id="coachBriefText">Save a daily check-in to unlock trend-aware training guidance.</p>
-        </section>
-      </aside>
-
-      <section class="workspace">
-        <header class="topbar" id="overview">
-          <div>
-            <p id="todayLabel" class="section-kicker"></p>
-            <h1>Workout planner</h1>
+      <section class="hero" id="overview" aria-label="Smart home overview">
+        <img src="assets/hero/smart-home-architecture.png" alt="Modern smart home with connected lighting, climate, cleaning, air, pet, and fragrance devices" />
+        <div class="hero-overlay">
+          <p class="eyebrow">Best-fit architecture for a 1 bed, 1 bath, 764 sq.ft. apartment</p>
+          <h1>Apartment automation that feels invisible, not overbuilt.</h1>
+          <p>
+            A practical blueprint for the Magellan layout: open great room and kitchen, bedroom, bath, walk-in closet, laundry, entry, and deck.
+            Your Govee, Honeywell, SwitchBot, Dreame, CleanForce, Litter-Robot, and Pura gear all get a clear home.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#architecture"><i data-lucide="network"></i> View architecture</a>
+            <a class="button secondary" href="#rollout"><i data-lucide="list-checks"></i> Install order</a>
           </div>
-          <div class="topbar-actions">
-            <a class="site-link" href="https://sandeepn97.github.io/workout-planner/" target="_blank" rel="noreferrer">Live site</a>
-            <button class="button subtle" id="resetDemo" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section class="stat-strip" aria-label="Project summary">
+        <article>
+          <span>Apartment</span>
+          <strong>1 bed / 1 bath</strong>
+          <small>Magellan layout, 764 sq.ft.</small>
+        </article>
+        <article>
+          <span>Core hub</span>
+          <strong>Home Assistant</strong>
+          <small>Local-first orchestration</small>
+        </article>
+        <article>
+          <span>Voice layer</span>
+          <strong>Alexa / Google</strong>
+          <small>Hands-free commands</small>
+        </article>
+        <article>
+          <span>Layout priority</span>
+          <strong>Small footprint</strong>
+          <small>Fewer hubs, stronger placement</small>
+        </article>
+      </section>
+
+      <section class="section-heading" id="layout">
+        <p class="eyebrow">Apartment layout</p>
+        <h2>Place devices where the floor plan helps them</h2>
+        <p>The goal is not more gadgets. It is fewer control points, cleaner sight lines, and routines that fit how a one-bedroom apartment is actually used.</p>
+      </section>
+
+      <section class="layout-section" aria-label="One bedroom apartment automation plan">
+        <div class="floorplan" aria-label="Magellan one bedroom floor plan device placement">
+          <div class="room kitchen">
+            <strong>Kitchen</strong>
+            <span>Pura Mini</span>
           </div>
-        </header>
-
-        <section class="hero-panel" aria-label="Training snapshot">
-          <div class="hero-copy">
-            <p class="section-kicker">Today's plan</p>
-            <h2 id="heroPlanTitle">Personalized movement, measured daily.</h2>
-            <p id="heroPlanText">Choose your goal, log the day, and PulsePlan will keep the next session realistic.</p>
-            <div class="hero-actions">
-              <button class="button primary" id="startWorkout" type="button">Start workout</button>
-              <a class="button secondary" href="#routineOverview">View split</a>
-            </div>
+          <div class="room great-room">
+            <strong>Great room</strong>
+            <span>TV backlight, Govee bulbs, CleanForce, Dreame dock</span>
           </div>
-          <div class="hero-media" id="heroMedia" aria-label="Featured exercises"></div>
-          <div class="readiness-card">
-            <span>Readiness</span>
-            <strong id="readinessScore">--</strong>
-            <p id="readinessText">No logs yet</p>
+          <div class="room entry">
+            <strong>Entry</strong>
+            <span>SwitchBot Remote</span>
           </div>
-        </section>
-
-        <section class="workout-runner" id="workoutRunner" aria-live="polite"></section>
-
-        <section class="metrics-grid" aria-label="Key metrics">
-          <article class="metric-tile">
-            <span>Current weight</span>
-            <strong id="currentWeight">--</strong>
-            <small id="weightDelta">Add first entry</small>
-          </article>
-          <article class="metric-tile">
-            <span>7-day exercise</span>
-            <strong id="weeklyMinutes">0 min</strong>
-            <small id="weeklyTarget">Target: 150 min</small>
-          </article>
-          <article class="metric-tile">
-            <span>Goal focus</span>
-            <strong id="goalFocus">Balanced</strong>
-            <small id="equipmentFocus">Bodyweight</small>
-          </article>
-          <article class="metric-tile accent">
-            <span>Next move</span>
-            <strong id="nextMove">Check in</strong>
-            <small id="nextMoveDetail">Log today to calibrate</small>
-          </article>
-        </section>
-
-        <section class="training-plan" aria-label="Weekly training plan">
-          <div class="plan-header">
-            <div>
-              <p class="section-kicker">Weekly split</p>
-              <h2>Push, pull, legs, upper, shoulders and arms</h2>
-            </div>
-            <div class="plan-actions">
-              <button class="auto-fill-button curator-only" id="autoFillTutorials" type="button">Auto-fill videos</button>
-              <div class="progression-chip">
-                <span>Progression</span>
-                <strong>12 / 10 / 8</strong>
-              </div>
-            </div>
+          <div class="room laundry">
+            <strong>Laundry</strong>
+            <span>Hub shelf</span>
           </div>
-          <p class="curator-status curator-only" id="curatorStatus"></p>
-
-          <div class="routine-overview" id="routineOverview" aria-label="Current workout routine"></div>
-
-          <div class="progression-panel">
-            <div>
-              <p class="section-kicker">How to progress</p>
-              <h3 id="progressionTitle">Beat the logbook without rushing the reps.</h3>
-            </div>
-            <ol id="progressionList"></ol>
+          <div class="room bath">
+            <strong>Bath</strong>
+            <span>Pura schedule</span>
           </div>
-        </section>
-
-        <section class="content-grid">
-          <article class="panel chart-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="section-kicker">Progress</p>
-                <h2>Weight trend</h2>
-              </div>
-              <span id="trendText" class="status-pill">No entries yet</span>
-            </div>
-            <canvas id="weightChart" width="900" height="420" aria-label="Weight trend chart"></canvas>
+          <div class="room closet">
+            <strong>Walk-in closet</strong>
+            <span>Storage-safe zone</span>
+          </div>
+          <div class="room bedroom">
+            <strong>Bedroom</strong>
+            <span>Bulb, thermostat routine, Pura Home</span>
+          </div>
+          <div class="room deck">
+            <strong>Deck</strong>
+            <span>No permanent devices</span>
+          </div>
+        </div>
+        <div class="placement-list">
+          <article>
+            <i data-lucide="router"></i>
+            <h3>Hub location</h3>
+            <p>Put Home Assistant and the SwitchBot hub near the entry/laundry/closet wall if there is power. It is central to the great room, bedroom, bath, and kitchen.</p>
           </article>
-
-          <article class="panel suggestion-panel">
-            <div class="panel-heading">
-              <div>
-                <p class="section-kicker">Recommendation</p>
-                <h2 id="suggestionTitle">Ready when you are</h2>
-              </div>
-              <button class="icon-button" id="refreshPlan" type="button" aria-label="Refresh workout suggestion">
-                <span aria-hidden="true">R</span>
-              </button>
-            </div>
-            <div id="suggestionBody" class="suggestion-body"></div>
+          <article>
+            <i data-lucide="tv"></i>
+            <h3>TV wall</h3>
+            <p>The great room is the lighting anchor. Put the Govee TV backlight on the TV wall and use two bulbs for the living area instead of trying to light every corner.</p>
           </article>
-
-          <article class="panel" id="checkin">
-            <div class="panel-heading">
-              <div>
-                <p class="section-kicker">Daily check-in</p>
-                <h2>Log today</h2>
-              </div>
-            </div>
-            <form id="logForm" class="form-grid">
-              <label>
-                <span>Date</span>
-                <input id="logDate" type="date" required />
-              </label>
-              <label>
-                <span>Weight</span>
-                <input id="weight" type="number" min="40" max="700" step="0.1" placeholder="185.4" required />
-              </label>
-              <label>
-                <span>Exercise minutes</span>
-                <input id="minutes" type="number" min="0" max="600" step="5" placeholder="45" required />
-              </label>
-              <label>
-                <span>Workout type</span>
-                <select id="workoutType">
-                  <option>Strength</option>
-                  <option>Cardio</option>
-                  <option>Running</option>
-                  <option>Swimming</option>
-                  <option>Sauna</option>
-                  <option>Mobility</option>
-                  <option>HIIT</option>
-                  <option>Sport</option>
-                  <option>Rest</option>
-                </select>
-              </label>
-              <label class="wide">
-                <span>Notes</span>
-                <textarea id="notes" rows="3" placeholder="Energy, soreness, wins, or anything to adjust tomorrow."></textarea>
-              </label>
-              <button class="button primary wide" type="submit">Save daily log</button>
-            </form>
+          <article>
+            <i data-lucide="sparkles"></i>
+            <h3>Robot path</h3>
+            <p>Dock the Dreame in the great room or near the kitchen edge with a straight exit path. Avoid the bedroom doorway pinch point until mapping is complete.</p>
           </article>
-
-          <article class="panel" id="preferences">
-            <div class="panel-heading">
-              <div>
-                <p class="section-kicker">Preferences</p>
-                <h2>Design the plan</h2>
-              </div>
-            </div>
-            <form id="preferencesForm" class="form-grid">
-              <label>
-                <span>Goal</span>
-                <select id="goal">
-                  <option value="balanced">Balanced fitness</option>
-                  <option value="fat-loss">Fat loss</option>
-                  <option value="muscle">Build muscle</option>
-                  <option value="endurance">Endurance</option>
-                  <option value="mobility">Mobility</option>
-                </select>
-              </label>
-              <label>
-                <span>Experience</span>
-                <select id="experience">
-                  <option value="beginner">Beginner</option>
-                  <option value="intermediate">Intermediate</option>
-                  <option value="advanced">Advanced</option>
-                </select>
-              </label>
-              <label>
-                <span>Available time</span>
-                <select id="availableTime">
-                  <option value="20">20 minutes</option>
-                  <option value="35">35 minutes</option>
-                  <option value="50">50 minutes</option>
-                  <option value="65">65 minutes</option>
-                </select>
-              </label>
-              <label>
-                <span>Equipment</span>
-                <select id="equipment">
-                  <option value="bodyweight">Bodyweight</option>
-                  <option value="dumbbells">Dumbbells</option>
-                  <option value="gym">Gym access</option>
-                  <option value="bands">Resistance bands</option>
-                </select>
-              </label>
-              <label>
-                <span>Pre-workout</span>
-                <select id="prepActivity">
-                  <option>None</option>
-                  <option>Running</option>
-                  <option>Swimming</option>
-                  <option>Sauna</option>
-                  <option>Warm-up</option>
-                  <option>Mobility</option>
-                  <option>Other</option>
-                </select>
-              </label>
-              <label>
-                <span>Prep minutes</span>
-                <input id="prepMinutesDefault" type="number" min="0" max="240" step="1" inputmode="numeric" placeholder="8" />
-              </label>
-              <label>
-                <span>Prep distance</span>
-                <input id="prepDistanceDefault" type="number" min="0" max="100" step="0.1" inputmode="decimal" placeholder="Optional" />
-              </label>
-              <label class="wide">
-                <span>User request</span>
-                <textarea id="userWant" rows="3" placeholder="Example: Low-impact workouts, more core, stronger legs."></textarea>
-              </label>
-              <button class="button secondary wide" type="submit">Update suggestions</button>
-            </form>
+          <article>
+            <i data-lucide="wind"></i>
+            <h3>Air and scent</h3>
+            <p>Use the CleanForce in the great room for whole-apartment air movement. Keep Pura schedules subtle because scent travels fast in 764 sq.ft.</p>
           </article>
+        </div>
+      </section>
 
-          <article class="panel history-panel" id="history">
-            <div class="panel-heading">
-              <div>
-                <p class="section-kicker">History</p>
-                <h2>Recent logs</h2>
-              </div>
-            </div>
-            <div id="historyList" class="history-list"></div>
-          </article>
-        </section>
+      <section class="section-heading" id="architecture">
+        <p class="eyebrow">Architecture</p>
+        <h2>Recommended control layers</h2>
+        <p>For a one-bedroom apartment, the best architecture is compact: one IoT network, one dashboard, one voice layer, and a few physical fallbacks.</p>
+      </section>
+
+      <section class="architecture-grid" aria-label="Automation architecture diagram">
+        <article class="architecture-card core-card" data-layer="hub">
+          <span class="card-icon"><i data-lucide="server"></i></span>
+          <p class="eyebrow">Layer 1</p>
+          <h3>Home Assistant hub</h3>
+          <p>Run on Home Assistant Green, a mini PC, or Raspberry Pi. It becomes the single dashboard, rules engine, and device state memory.</p>
+          <ul>
+            <li>Local dashboards</li>
+            <li>Scene orchestration</li>
+            <li>Cross-brand automations</li>
+          </ul>
+        </article>
+
+        <div class="diagram-stage" id="diagramStage" aria-label="Interactive home automation flow">
+          <canvas id="diagramCanvas" width="1100" height="720" aria-hidden="true"></canvas>
+          <button class="node hub-node active" type="button" data-node="hub">
+            <i data-lucide="server"></i>
+            <span>Home Assistant</span>
+          </button>
+          <button class="node voice-node" type="button" data-node="voice">
+            <i data-lucide="mic"></i>
+            <span>Voice</span>
+          </button>
+          <button class="node light-node" type="button" data-node="lighting">
+            <i data-lucide="lightbulb"></i>
+            <span>Govee</span>
+          </button>
+          <button class="node climate-node" type="button" data-node="climate">
+            <i data-lucide="thermometer"></i>
+            <span>Climate</span>
+          </button>
+          <button class="node clean-node" type="button" data-node="cleaning">
+            <i data-lucide="sparkles"></i>
+            <span>Cleaning</span>
+          </button>
+          <button class="node air-node" type="button" data-node="air">
+            <i data-lucide="wind"></i>
+            <span>Air</span>
+          </button>
+          <button class="node pet-node" type="button" data-node="pet">
+            <i data-lucide="circle-dot"></i>
+            <span>Pet</span>
+          </button>
+          <button class="node scent-node" type="button" data-node="scent">
+            <i data-lucide="flower-2"></i>
+            <span>Scent</span>
+          </button>
+        </div>
+
+        <article class="architecture-card detail-card" id="layerDetail" aria-live="polite"></article>
+      </section>
+
+      <section class="section-heading" id="inventory">
+        <p class="eyebrow">Device map</p>
+        <h2>Your gear by zone and role</h2>
+        <p>Filter the inventory to see what each item should do in the system.</p>
+      </section>
+
+      <section class="filter-bar" aria-label="Device filters">
+        <button class="filter-button active" type="button" data-filter="all">All</button>
+        <button class="filter-button" type="button" data-filter="Lighting">Lighting</button>
+        <button class="filter-button" type="button" data-filter="Comfort">Comfort</button>
+        <button class="filter-button" type="button" data-filter="Cleaning">Cleaning</button>
+        <button class="filter-button" type="button" data-filter="Air">Air</button>
+        <button class="filter-button" type="button" data-filter="Pet">Pet</button>
+        <button class="filter-button" type="button" data-filter="Fragrance">Fragrance</button>
+      </section>
+
+      <section class="device-grid" id="deviceGrid" aria-label="Device inventory"></section>
+
+      <section class="split-section" id="automations">
+        <div class="section-heading compact">
+          <p class="eyebrow">Automation playbook</p>
+          <h2>Scenes that make the house feel intentional</h2>
+          <p>These are the highest-value routines for the devices you listed.</p>
+        </div>
+        <div class="automation-list" id="automationList"></div>
+      </section>
+
+      <section class="section-heading">
+        <p class="eyebrow">Network plan</p>
+        <h2>Make Wi-Fi the boring part</h2>
+        <p>Most of this gear depends on 2.4 GHz Wi-Fi or vendor cloud APIs, so network hygiene matters more than flashy complexity.</p>
+      </section>
+
+      <section class="network-grid">
+        <article>
+          <i data-lucide="router"></i>
+          <h3>Dedicated IoT SSID</h3>
+          <p>Create a 2.4 GHz network named something simple like <strong>Nisha-IoT</strong>. Keep phones and laptops on the main network.</p>
+        </article>
+        <article>
+          <i data-lucide="shield-check"></i>
+          <h3>Guest-style isolation</h3>
+          <p>Let IoT devices reach the internet and Home Assistant, but limit direct access to your personal devices where your router allows it.</p>
+        </article>
+        <article>
+          <i data-lucide="radio"></i>
+          <h3>Bluetooth bridge placement</h3>
+          <p>Put the SwitchBot hub near the Button Pusher and Remote. Bluetooth automation quality is mostly about distance and walls.</p>
+        </article>
+        <article>
+          <i data-lucide="badge-check"></i>
+          <h3>Fallback controls</h3>
+          <p>Keep the SwitchBot Remote mapped to essential scenes so lights or buttons still work when a phone app is inconvenient.</p>
+        </article>
+      </section>
+
+      <section class="rollout" id="rollout">
+        <div class="section-heading compact">
+          <p class="eyebrow">Rollout</p>
+          <h2>Install in this order</h2>
+          <p>Start with the network and hub, then add devices by dependency and daily value.</p>
+        </div>
+        <ol class="timeline" id="timeline"></ol>
       </section>
     </main>
-
-    <div class="demo-modal" id="demoModal" aria-hidden="true">
-      <div class="demo-modal-backdrop" data-close-demo></div>
-      <section class="demo-modal-panel" role="dialog" aria-modal="true" aria-labelledby="demoModalTitle">
-        <button class="demo-modal-close" type="button" data-close-demo aria-label="Close form demo">Close</button>
-        <div class="demo-modal-media">
-          <img id="demoModalImage" alt="" />
-          <span class="demo-modal-badge">Exercise guide</span>
-        </div>
-        <div class="demo-modal-body">
-          <p class="section-kicker" id="demoModalMuscle"></p>
-          <h2 id="demoModalTitle"></h2>
-          <div class="exercise-meta" id="demoModalMeta"></div>
-          <section class="shorts-panel" aria-label="Exercise video tutorial">
-            <div class="shorts-header">
-              <div>
-                <p class="section-kicker">Watch</p>
-                <h3 id="shortsPanelTitle">Video tutorial</h3>
-              </div>
-              <button class="shorts-clear curator-only" id="clearShort" type="button">Clear</button>
-            </div>
-            <div class="shorts-player" id="shortsPlayer">
-              <p>No video tutorial has been added for this exercise yet.</p>
-            </div>
-            <form class="shorts-form curator-only" id="shortsForm">
-              <input id="shortsUrl" type="url" placeholder="Paste YouTube URL" />
-              <button type="submit">Verify and save</button>
-            </form>
-          </section>
-          <div class="exercise-guidance" id="demoModalGuidance"></div>
-        </div>
-      </section>
-    </div>
-
-    <script src="app.js"></script>
   </body>
 </html>

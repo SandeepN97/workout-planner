@@ -216,5 +216,5 @@ const server = http.createServer(async (request, response) => {
 });
 
 server.listen(port, () => {
-  console.log(`PulsePlan running at http://127.0.0.1:${port}`);
+  console.log(`Home automation architecture running at http://127.0.0.1:${port}`);
 });
